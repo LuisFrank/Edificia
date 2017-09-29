@@ -1,0 +1,55 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="pe.assetec.edificia.fragment.CommentsListFragment">
+
+    <ProgressBar
+        android:id="@+id/login_progressComment"
+        style="?android:attr/progressBarStyleLarge"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_gravity="center"
+        android:layout_marginBottom="8dp"
+        android:visibility="visible" />
+
+    <!-- TODO: Update blank fragment layout -->
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+
+        <ListView
+            android:id="@+id/lvFragmentComments"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="2" />
+
+        <EditText
+            android:id="@+id/etComment"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical|center"
+            android:ems="10"
+            android:textSize="24sp"
+            android:inputType="textPersonName"
+            android:hint="Escriba aqui" />
+
+        <Button
+            android:id="@+id/btnComment"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical|center"
+            android:padding="10dp"
+            android:paddingLeft="18dp"
+            android:text="Enviar"
+            android:textColor="#8e8888"
+            android:textSize="24sp" />
+
+
+
+    </LinearLayout>
+
+
+</FrameLayout>

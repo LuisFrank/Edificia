@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_receipt"
+            android:icon="@drawable/ic_menu_camera"
+            android:title="Recibos" />
+        <item
+            android:id="@+id/nav_report"
+            android:icon="@drawable/ic_menu_gallery"
+            android:title="Informes Económicos" />
+        <item
+            android:id="@+id/nav_booking"
+            android:icon="@drawable/ic_menu_slideshow"
+            android:title="Reservas" />
+        <item
+            android:id="@+id/nav_ticket"
+            android:icon="@drawable/ic_menu_manage"
+            android:title="Tickets" />
+    </group>
+
+    <item android:title="Sesión">
+        <menu>
+            <item
+                android:id="@+id/nav_log_out"
+                android:icon="@drawable/ic_menu_share"
+                android:title="Cerrar Sesión" />
+
+        </menu>
+    </item>
+
+</menu>
