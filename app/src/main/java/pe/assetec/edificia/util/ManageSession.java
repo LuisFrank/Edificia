@@ -26,6 +26,8 @@ public class ManageSession {
     private String ISLOGIN="login";
 
     private String BUILDINGS="buildings";
+
+    private String USERTYPE="usertype";
     // Shared Preferences variable
     SharedPreferences spSession;
     //editor for shared preference
@@ -36,11 +38,12 @@ public class ManageSession {
         editor=spSession.edit();
     }
     // function store user details
-    public void storeUser(String name,String pass,String email)
+    public void storeUser(String name,String pass,String email,String usertype)
     {
         editor.putString(USERNAME,name);
         editor.putString(PASSWORD,pass);
         editor.putString(EMAIL,email);
+        editor.putString(USERTYPE,usertype);
         editor.commit();
     }
     // to login user
@@ -57,6 +60,12 @@ public class ManageSession {
     public String getUserName()
     {
         return spSession.getString(USERNAME,"");
+    }
+
+    //to get username
+    public String getUserType()
+    {
+        return spSession.getString(USERTYPE,"");
     }
     //to get userpassword
     public String getUserPassword()

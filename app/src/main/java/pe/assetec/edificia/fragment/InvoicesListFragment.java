@@ -41,9 +41,9 @@ public class InvoicesListFragment extends Fragment {
 
     DownloadManager downloadManager;
 //   RUTAS
-//    String myUrl = "http://edificia.pe/api/v1/buildings";
+    String myUrl = "http://edificia.pe/api/v1/buildings";
     //Localhost
-    String myUrl = "http://localhost:3000/api/v1/buildings";
+//    String myUrl = "http://localhost:3000/api/v1/buildings";
     //String to place our result in
     String result;
     ManageSession session;
@@ -144,15 +144,28 @@ public class InvoicesListFragment extends Fragment {
                     Log.e("result",result);
 
                     //set Fragmentclass Arguments
-                    Fragment mFrag = new InvoiceDetailFragment();
+//                    Fragment mFrag = new InvoiceDetailFragment();
+//                    Bundle bundle=new Bundle();
+//                    bundle.putString("invoices_details",result );
+//                    bundle.putInt("invoice_id",invoice.getId());
+//                    bundle.putInt("building_id",building_id);
+//                    bundle.putInt("departament_id",departament_id);
+//                    mFrag.setArguments(bundle);
+//                    FragmentManager fragmentManager = getActivity().getFragmentManager();
+//                    fragmentManager.beginTransaction().replace(R.id.Contendor, mFrag).addToBackStack(null).commit();
+
+//
+//                    String FinalUrl =  myUrl + "/"+building_id + "/departaments/"+ departament_id + "/invoices/" + invoice.getId() +"/print.pdf";
+
+                    //set Fragmentclass Arguments
+                    Fragment fr  = new ShowPDFFragment();
                     Bundle bundle=new Bundle();
-                    bundle.putString("invoices_details",result );
-                    bundle.putInt("invoice_id",invoice.getId());
                     bundle.putInt("building_id",building_id);
                     bundle.putInt("departament_id",departament_id);
-                    mFrag.setArguments(bundle);
+                    bundle.putInt("invoice_id",invoice.getId());
+                    fr.setArguments(bundle);
                     FragmentManager fragmentManager = getActivity().getFragmentManager();
-                    fragmentManager.beginTransaction().replace(R.id.Contendor, mFrag).addToBackStack(null).commit();
+                    fragmentManager.beginTransaction().replace(R.id.Contendor, fr).addToBackStack(null).commit();
 
 
                 }else{

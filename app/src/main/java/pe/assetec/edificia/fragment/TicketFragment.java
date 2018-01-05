@@ -104,6 +104,7 @@ public class TicketFragment extends Fragment {
         editTextSearch = view.findViewById(R.id.txtSearchTicket);
 
         listview = view.findViewById(R.id.lvDepartamentsTicket);
+       mAllData.clear();
         listview.setTextFilterEnabled(true);
         InitLisDepartaments();
         listview.setOnItemClickListener(new AdapterView.OnItemClickListener() {

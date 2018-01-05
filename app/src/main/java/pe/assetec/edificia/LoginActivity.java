@@ -3,6 +3,7 @@ package pe.assetec.edificia;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
+import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.support.annotation.NonNull;
@@ -54,7 +55,7 @@ import static android.Manifest.permission.READ_CONTACTS;
 /**
  * A login screen that offers login via email/password.
  */
-public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<Cursor> {
+public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
 
     /**
      * Id to identity READ_CONTACTS permission request.
@@ -63,8 +64,8 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     public static final int CONNECTION_TIMEOUT=10000;
     public static final int READ_TIMEOUT=15000;
     private static final int REQUEST_READ_CONTACTS = 0;
-//    public static final String URL_STRING = "http://edificia.pe/api/v1/new_sessions";
-    public static final String URL_STRING = "http://localhost:3000/api/v1/new_sessions";
+    public static final String URL_STRING = "http://edificia.pe/api/v1/new_sessions";
+//    public static final String URL_STRING = "http://localhost:3000/api/v1/new_sessions";
 
     ManageSession session;
 
@@ -450,21 +451,24 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             Log.e("succes",success);
             JSONObject jsonObject = null;
             try {
-                jsonObject = new JSONObject(success);
-                if(jsonObject.isNull("auth_token"))
-                {
-                    mPasswordView.setError(getString(R.string.error_incorrect_password));
-                    mPasswordView.requestFocus();
-                }
-                else
-                {
+                if (!success.equalsIgnoreCase("unsuccessful")){
 
-                    Toast.makeText(LoginActivity.this, jsonObject.getJSONObject("user").getString("email").toString(), Toast.LENGTH_SHORT).show();
-                    session.loginUser(jsonObject.getJSONObject("user").getString("email").toString(),mPassword,jsonObject.getString("auth_token"),true,jsonObject.getJSONObject("user").getJSONArray("buildings"));
-                    Intent intent = new Intent(LoginActivity.this,MainActivity.class);
-                    startActivity(intent);
-                    finish();
-                     //it's not contain key club or isnull so do this operation here
+                    jsonObject = new JSONObject(success);
+                    if (jsonObject.isNull("auth_token")) {
+                        mPasswordView.setError(getString(R.string.error_incorrect_password));
+                        mPasswordView.requestFocus();
+                    } else {
+
+                        Toast.makeText(LoginActivity.this, jsonObject.getJSONObject("user").getString("email").toString(), Toast.LENGTH_SHORT).show();
+                        session.loginUser(jsonObject.getJSONObject("user").getString("email").toString(), mPassword, jsonObject.getString("auth_token"), true, jsonObject.getJSONObject("user").getJSONArray("buildings"));
+                        session.storeUser(jsonObject.getJSONObject("user").getString("full_name"), mPassword, jsonObject.getJSONObject("user").getString("email"), jsonObject.getJSONObject("user").getString("userable_type"));
+                        Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                        startActivity(intent);
+                        finish();
+                        //it's not contain key club or isnull so do this operation here
+                    }
+                }  else{
+                    Toast.makeText(LoginActivity.this, "Usuario o Contraseña incorrecto", Toast.LENGTH_SHORT).show();
                 }
             } catch (JSONException e) {
                 e.printStackTrace();

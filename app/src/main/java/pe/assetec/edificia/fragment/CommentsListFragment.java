@@ -44,6 +44,7 @@ import pe.assetec.edificia.model.Building;
 import pe.assetec.edificia.model.Comment;
 import pe.assetec.edificia.model.Departament;
 import pe.assetec.edificia.model.Period;
+import pe.assetec.edificia.model.Ticket;
 import pe.assetec.edificia.util.HttpGetRequest;
 import pe.assetec.edificia.util.ManageSession;
 
@@ -59,7 +60,7 @@ public class CommentsListFragment extends Fragment {
     //   RUTAS
    String myUrl = "http://edificia.pe/api/v1/buildings";
     //Localhost
-//    String myUrl = "http://localhost:3000/api/v1/buildings";
+//  String myUrl = "http://localhost:3000/api/v1/buildings";
     //String to place our result in
     String result;
     ManageSession session;
@@ -75,11 +76,12 @@ public class CommentsListFragment extends Fragment {
     public static final int CONNECTION_TIMEOUT=10000;
     public static final int READ_TIMEOUT=15000;
     private static final int REQUEST_READ_CONTACTS = 0;
+     Ticket Ticketobject;
 
     Integer ticket_id = 0;
     Integer building_id  = 0;
     Integer departament_id = 0;
-
+    String  summary = "";
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -93,6 +95,8 @@ public class CommentsListFragment extends Fragment {
     private OnFragmentInteractionListener mListener;
 
     public CommentsListFragment() {
+
+
         // Required empty public constructor
     }
 
@@ -144,8 +148,17 @@ public class CommentsListFragment extends Fragment {
           ticket_id =getArguments().getInt("ticket_id");
           building_id = getArguments().getInt("building_id");
           departament_id =  getArguments().getInt("departament_id");
+        Ticketobject= (Ticket) getArguments().getSerializable("ticket");
+
 
         comments = new ArrayList<Comment>();
+        Comment cm = new Comment();
+        cm.setCreated_at(Ticketobject.getCreated_at());
+        cm.setBody(Ticketobject.getDescription());
+        cm.setFirst_name(Ticketobject.getFirst_name());
+        cm.setLast_name(Ticketobject.getLast_name());
+        comments.add(cm);
+
         final String auth_token =  session.getTOKEN();
         String finalUrl =myUrl+ "/"+building_id+"/departaments/"+ departament_id+"/tickets/"+ticket_id;
         CommentsTask tas = new CommentsTask(auth_token,finalUrl);
@@ -250,7 +263,7 @@ public class CommentsListFragment extends Fragment {
 
                 String get_result =  sb.toString();
 
-                comments = CommentsController.fromJson(new JSONObject(get_result).getJSONObject("ticket").getJSONArray("comments"));
+                comments.addAll(CommentsController.fromJson(new JSONObject(get_result).getJSONObject("ticket").getJSONArray("comments")));
                 result = sb.toString();
                 Log.e("resultado response ",result);
 
@@ -270,6 +283,7 @@ public class CommentsListFragment extends Fragment {
 
         @Override
         protected void onPostExecute(String success) {
+
             listAdapter = new CommentsListAdapter(getActivity(),R.layout.row_layout_comment,comments);
             listview.setAdapter(listAdapter);
             listAdapter.notifyDataSetChanged();
@@ -429,6 +443,7 @@ public class CommentsListFragment extends Fragment {
                         String finalUrl =myUrl+ "/"+building_id+"/departaments/"+ departament_id+"/tickets/"+ticket_id;
                         CommentsTask tas = new CommentsTask(mtoken,finalUrl);
                         tas.execute();
+                        etComment.setText("");
 
                     }else{
                         Toast.makeText(getActivity(),"No se pudo enviar ",Toast.LENGTH_LONG).show();
@@ -446,4 +461,9 @@ public class CommentsListFragment extends Fragment {
             mProgressBar.setVisibility(View.GONE);
         }
     }
+
+
+
+
+
 }

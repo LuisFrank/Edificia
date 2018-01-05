@@ -42,9 +42,9 @@
                 <ImageView
                     android:id="@+id/imageView"
                     android:layout_width="226dp"
-                    android:layout_height="245dp"
+                    android:layout_height="230dp"
                     android:layout_gravity="center_horizontal"
-                    app:srcCompat="@drawable/logo_edificia" />
+                    android:background="@drawable/logo_edificia" />
             </LinearLayout>
 
             <LinearLayout
@@ -61,7 +61,7 @@
 
 
 
-                <android.support.design.widget.TextInputLayout
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:padding="10dp">
@@ -76,11 +76,11 @@
                         android:maxLines="1"
                         android:padding="10dp"
                         android:singleLine="true"
-                        android:text="dennisjacr@gmail.com" />
+                        android:text="" />
+                    <!--android:text="dennisjacr@gmail.com" />-->
+                </LinearLayout>
 
-                </android.support.design.widget.TextInputLayout>
-
-                <android.support.design.widget.TextInputLayout
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:padding="10dp">
@@ -97,9 +97,9 @@
                         android:maxLines="1"
                         android:padding="10dp"
                         android:singleLine="true"
-                        android:text="12345678" />
-
-                </android.support.design.widget.TextInputLayout>
+                        android:text="" />
+                         <!--android:text="12345678" />-->
+                </LinearLayout>
 
                 <Button
                     android:id="@+id/email_sign_in_button"

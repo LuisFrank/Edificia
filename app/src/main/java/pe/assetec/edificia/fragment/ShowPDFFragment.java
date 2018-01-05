@@ -56,8 +56,8 @@ public class ShowPDFFragment extends Fragment {
             Manifest.permission.WRITE_EXTERNAL_STORAGE
     };
 
-    String myUrl = "http://localhost:3000/api/v1/buildings";
-//    String myUrl = "http://edificia.pe/api/v1/buildings";
+//    String myUrl = "http://localhost:3000/api/v1/buildings";
+    String myUrl = "http://edificia.pe/api/v1/buildings";
 
     WebView wv;
     PDFView pdfv;
@@ -160,105 +160,89 @@ public class ShowPDFFragment extends Fragment {
         String fileName = "";
         @Override
         protected void onPreExecute() {
-            Log.w("ENTRO PRE", "------------------------------");
             super.onPreExecute();
             pDialog.setVisibility(View.VISIBLE);
         }
 
         @Override
         protected String doInBackground(String... strings) {
-            Log.w("ENTRO BACK", "------------------------------");
             String stringUrl = strings[0];
             String stringToken = strings[1];
             try {
 
 
-                        URL url = null;
-                        url = new URL(stringUrl);
+                URL url = null;
+                url = new URL(stringUrl);
 
-                        HttpURLConnection httpConn = null;
-                        httpConn = (HttpURLConnection) url.openConnection();
-                        //Set methods and timeouts
-        //                httpConn.setRequestMethod(REQUEST_METHOD);
-        //                httpConn.setReadTimeout(READ_TIMEOUT);
-        //                httpConn.setConnectTimeout(CONNECTION_TIMEOUT);
-                        String token = " " +new String(stringToken);
-                        httpConn.addRequestProperty ("Authorization", token);
-                        //Connect to our url
+                HttpURLConnection httpConn = null;
+                httpConn = (HttpURLConnection) url.openConnection();
+                //Set methods and timeouts
+//                httpConn.setRequestMethod(REQUEST_METHOD);
+//                httpConn.setReadTimeout(READ_TIMEOUT);
+//                httpConn.setConnectTimeout(CONNECTION_TIMEOUT);
+                String token = " " +new String(stringToken);
+                httpConn.addRequestProperty ("Authorization", token);
+                //Connect to our url
 
-                        int responseCode = 0;
-                        responseCode = httpConn.getResponseCode();
+                int responseCode = 0;
+                responseCode = httpConn.getResponseCode();
 
-                Log.w("ENTRO URL CONN", "------------------------------");
-                        // always check HTTP response code first
-                        if (responseCode == HttpURLConnection.HTTP_OK) {
-                            Log.w("ENTRO HTTTP OK", "------------------------------");
-                             fileName = "";
-                            String disposition = httpConn.getHeaderField("Content-Disposition");
-                            String contentType = httpConn.getContentType();
-                            int contentLength = httpConn.getContentLength();
+                // always check HTTP response code first
+                if (responseCode == HttpURLConnection.HTTP_OK) {
 
-                            if (disposition != null) {
-                                // extracts file name from header field
-                                int index = disposition.indexOf("filename=");
-                                if (index > 0) {
-                                    fileName = disposition.substring(index + 10,
-                                            disposition.length() - 1);
-                                }
-        //                } else {
-        //                    // extracts file name from URL
-        //                    fileName = fileURL.substring(fileURL.lastIndexOf("/") + 1,
-        //                            fileURL.length());
-                            }
+                     fileName = "";
+                    String disposition = httpConn.getHeaderField("Content-Disposition");
+                    String contentType = httpConn.getContentType();
+                    int contentLength = httpConn.getContentLength();
 
-                            System.out.println("Content-Type = " + contentType);
-                            System.out.println("Content-Disposition = " + disposition);
-                            System.out.println("Content-Length = " + contentLength);
-                            System.out.println("fileName = " + fileName);
-                            try {
-                                // opens input stream from the HTTP connection
-                                InputStream inputStream = null;
+                    if (disposition != null) {
+                        // extracts file name from header field
+                        int index = disposition.indexOf("filename=");
+                        if (index > 0) {
+                            fileName = disposition.substring(index + 10,
+                                    disposition.length() - 1);
+                        }
+                    }
+                    try {
+                        // opens input stream from the HTTP connection
+                        InputStream inputStream = null;
 
-                                inputStream = httpConn.getInputStream();
+                        inputStream = httpConn.getInputStream();
 
-                                String extStorageDirectory = Environment.getExternalStorageDirectory().toString();
-                                File folder = new File(extStorageDirectory);
-                                folder.mkdir();
+                        String extStorageDirectory = Environment.getExternalStorageDirectory().toString();
+                        File folder = new File(extStorageDirectory);
+                        folder.mkdir();
 
-                                File pdfFile = new File(folder, fileName);
+                        File pdfFile = new File(folder, fileName);
+                        // opens an output stream to save into file
 
-                                // opens an output stream to save into file
-                                System.out.println("FILEEEEEEEEEE");
-                                System.out.println(pdfFile.getAbsolutePath());
-                                System.out.println("====");
-                                FileOutputStream outputStream = null;
-                                outputStream = new FileOutputStream(pdfFile);
+                        FileOutputStream outputStream = null;
+                        outputStream = new FileOutputStream(pdfFile);
 
-                                int totalSize = httpConn.getContentLength();
+                        int totalSize = httpConn.getContentLength();
 
-                                int bytesRead = -1;
-                                byte[] buffer = new byte[BUFFER_SIZE];
+                        int bytesRead = -1;
+                        byte[] buffer = new byte[BUFFER_SIZE];
 
-                                while ((bytesRead = inputStream.read(buffer)) != -1) {
-                                    outputStream.write(buffer, 0, bytesRead);
-                                }
+                        while ((bytesRead = inputStream.read(buffer)) != -1) {
+                            outputStream.write(buffer, 0, bytesRead);
+                        }
 
-                                outputStream.close();
-                                inputStream.close();
+                        outputStream.close();
+                        inputStream.close();
 
-                            } catch (FileNotFoundException e) {
-                                e.printStackTrace();
-                            } catch (MalformedURLException e) {
-                                e.printStackTrace();
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            }
-                            System.out.println("File downloaded");
-                            result = "success";
-                } else {
-                    System.out.println("No file to download. Server replied HTTP code: " + responseCode);
-                            result = "failed";
-                }
+                    } catch (FileNotFoundException e) {
+                        e.printStackTrace();
+                    } catch (MalformedURLException e) {
+                        e.printStackTrace();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    result = "success";
+
+                    } else {
+                                result = "failed";
+                    }
 
 
             } catch (MalformedURLException e) {
@@ -272,28 +256,25 @@ public class ShowPDFFragment extends Fragment {
 
             @Override
         protected void onPostExecute(String result) {
-                Log.w("ENTRO POST EXECUTE", "------------------------------");
                 pDialog.setVisibility(View.GONE);
                 if (result.equalsIgnoreCase("success")){
 
+                    Toast.makeText(getActivity(), fileName, Toast.LENGTH_SHORT).show();
+                    File file = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator + fileName);
+                     float STARTZOOM = 2.0f;
 
-            Toast.makeText(getActivity(), "Download PDf successfully", Toast.LENGTH_SHORT).show();
-
-            Log.d("Download complete", "----------");
-                File file = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator + fileName);
-                pdfv.fromFile(file).enableSwipe(true) // allows to block changing pages using swipe
-                        .swipeHorizontal(false)
-                        .enableDoubletap(true)
-                        .enableAnnotationRendering(false) // render annotations (such as comments, colors or forms)
-                        .password(null)
-                        .scrollHandle(null)
-                        .enableAntialiasing(true) // improve rendering a little bit on low-res screens
-                        // spacing between pages in dp. To define spacing color, set view background
-                        .spacing(0)
-                        .load();
+                    pdfv.fromFile(file).enableSwipe(true) // allows to block changing pages using swipe
+                    .swipeHorizontal(false)
+                    .enableDoubletap(true)
+                    .enableAnnotationRendering(false) // render annotations (such as comments, colors or forms)
+                    .password(null)
+                    .scrollHandle(null)
+                    .enableAntialiasing(true) // improve rendering a little bit on low-res screens
+                    .spacing(0)
+                    .load();
+                    pdfv.zoomTo(STARTZOOM);
                 }else{
-                    Toast.makeText(getActivity(), "Download PDf noooooo", Toast.LENGTH_SHORT).show();
-
+                     Toast.makeText(getActivity(), "No se pudo visualizar el PDF", Toast.LENGTH_SHORT).show();
                 }
         }
     }

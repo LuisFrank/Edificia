@@ -6,10 +6,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.design.widget.FloatingActionButton;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,7 +26,16 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
@@ -32,9 +43,12 @@ import pe.assetec.edificia.R;
 import pe.assetec.edificia.controller.BuildingController;
 import pe.assetec.edificia.controller.DepartamentsController;
 import pe.assetec.edificia.controller.PeriodController;
+import pe.assetec.edificia.controller.TicketsController;
 import pe.assetec.edificia.model.Building;
 import pe.assetec.edificia.model.Departament;
 import pe.assetec.edificia.model.Period;
+import pe.assetec.edificia.model.Ticket;
+import pe.assetec.edificia.util.AppStatus;
 import pe.assetec.edificia.util.HttpGetRequestContext;
 import pe.assetec.edificia.util.HttpGetRequestContextDepartaments;
 import pe.assetec.edificia.util.ManageSession;
@@ -49,14 +63,17 @@ import pe.assetec.edificia.util.ManageSession;
  */
 public class ReportFragment extends Fragment {
 
+    public static final String REQUEST_METHOD = "GET";
+    public static final int CONNECTION_TIMEOUT=10000;
+    public static final int READ_TIMEOUT=15000;
 
     Spinner spnBuildings, spnPeriods, spnTypeinfo;
     Button  buttonDownload;
     //Some url endpoint that you may have
-    String myUrl = "http://localhost:3000/api/v1/buildings";
+//    String myUrl = "http://localhost:3000/api/v1/buildings";
     String UrlDetallado = "economic_reports";
     String UrlResumido = "economic_report_groupeds";
-//   String myUrl = "http://edificia.pe/api/v1/buildings";
+    String myUrl = "http://edificia.pe/api/v1/buildings";
     //String to place our result in
     String result;
 
@@ -64,7 +81,7 @@ public class ReportFragment extends Fragment {
     DownloadManager downloadManager;
 
     int check = 0;
-
+    List<Period> periods;
 
 
     // TODO: Rename parameter arguments, choose names that match
@@ -131,23 +148,41 @@ public class ReportFragment extends Fragment {
         List<Building> datos;
         datos =  new ArrayList<Building>();
         ArrayAdapter<Building> adapter;
+        List<Building> uniqueBuildings = new ArrayList<Building>();
         //set contenct
         try {
             datos = BuildingController.fromJson(new JSONArray(session.getBuildings()));
+            //Metodo que convierte en unico la lista de edificios
+            uniqueBuildings.add(datos.get(0));
+            for (Building building : datos) {
+                boolean flag = false;
+                for (Building uniqueBuilding : uniqueBuildings) {
+                    if (uniqueBuilding.getBuilding_id().equals(building.getBuilding_id())) {
+                        flag = true;
+                    }
+                }
+                if(!flag)
+                    uniqueBuildings.add(building);
+
+            }
+
         } catch (JSONException e) {
 
             e.printStackTrace();
         }
 
-        adapter = new ArrayAdapter<Building> (getActivity(),android.R.layout.select_dialog_item,datos);
+        adapter = new ArrayAdapter<Building> (getActivity(),android.R.layout.select_dialog_item,uniqueBuildings);
         spnBuildings.setAdapter(adapter);
         adapter.notifyDataSetChanged();
+        ArrayAdapter<String> spinnerCountShoesArrayAdapter;
 
-
-        ArrayAdapter<String> spinnerCountShoesArrayAdapter = new ArrayAdapter<String>(getActivity(), android.R.layout.select_dialog_item, getResources().getStringArray(R.array.TipoInforme));
+        if (session.getUserType().equalsIgnoreCase("Person")){
+            spinnerCountShoesArrayAdapter = new ArrayAdapter<String>(getActivity(), android.R.layout.select_dialog_item, getResources().getStringArray(R.array.TipoInformePerson));
+        }else{
+           spinnerCountShoesArrayAdapter = new ArrayAdapter<String>(getActivity(), android.R.layout.select_dialog_item, getResources().getStringArray(R.array.TipoInformeEmployee));
+        }
         spinnerCountShoesArrayAdapter.setDropDownViewResource(android.R.layout.select_dialog_item);
         spnTypeinfo.setAdapter(spinnerCountShoesArrayAdapter);
-
 
 
         final List<Building> finalDatos = datos;
@@ -160,50 +195,13 @@ public class ReportFragment extends Fragment {
 
                     if (building.getBuilding_id() != 0) {
 
-                        List<Departament> departaments = new ArrayList<Departament>();
-                        List<Period> periods = new ArrayList<Period>();
                         String auth_token = session.getTOKEN();
 
-//                        HttpGetRequestContext getRequestDepartament = new HttpGetRequestContext(getActivity());
-                        HttpGetRequestContext getRequestPeriod = new HttpGetRequestContext(getActivity());
-                        JSONObject jsonObjectDepartament = null;
-                        JSONObject jsonObjectPeriod = null;
-
-                        String result_departaments;
-                        String result_periods;
-
-                        try {
-//                            result_departaments = getRequestDepartament.execute(myUrl + "/" + building.getBuilding_id() + "/departaments/", auth_token).get();
-                            result_periods = getRequestPeriod.execute(myUrl + "/" + building.getBuilding_id() + "/periods/", auth_token).get();
-
-//                            jsonObjectDepartament = new JSONObject(result_departaments);
-                            jsonObjectPeriod = new JSONObject(result_periods);
-//                            departaments = DepartamentsController.fromJson(jsonObjectDepartament.getJSONArray("departaments"));
-                            periods = PeriodController.fromJson(jsonObjectPeriod.getJSONArray("periods"));
-
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        } catch (ExecutionException e) {
-                            e.printStackTrace();
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
-
-
-//                        ArrayAdapter<Departament> dataAdapterDepartament = new ArrayAdapter<Departament>(getActivity(),
-//                                android.R.layout.select_dialog_item, departaments);
-
-                        ArrayAdapter<Period> dataAdapterPeriods = new ArrayAdapter<Period>(getActivity(),
-                                android.R.layout.select_dialog_item, periods);
-
-//                        dataAdapterDepartament.setDropDownViewResource(android.R.layout.select_dialog_item);
-//                        dataAdapterDepartament.notifyDataSetChanged();
-//                        spnDepartament.setAdapter(dataAdapterDepartament);
-
-                        dataAdapterPeriods.setDropDownViewResource(android.R.layout.select_dialog_item);
-                        dataAdapterPeriods.notifyDataSetChanged();
-                        spnPeriods.setAdapter(dataAdapterPeriods);
-
+                        String finalUrl;
+                        //
+                        finalUrl = myUrl + "/" + building.getBuilding_id() + "/periods/";
+                        PeriodListTask taskperiod = new PeriodListTask( auth_token,finalUrl);
+                        taskperiod.execute();
 
 
                     } else {
@@ -221,6 +219,8 @@ public class ReportFragment extends Fragment {
         buttonDownload.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
+                    //Check for Internet Connection first
+            if (AppStatus.getInstance(getActivity()).isOnline()) {
                 Building building = (Building) spnBuildings.getSelectedItem();
 //                Departament departament = (Departament) spnDepartament.getSelectedItem();
                 Period period = (Period) spnPeriods.getSelectedItem();
@@ -228,11 +228,10 @@ public class ReportFragment extends Fragment {
 
                 String newUrl = "";
                 if (tipo.equalsIgnoreCase("resumido")) {
-                     newUrl = myUrl + "/" + building.getBuilding_id()  + "/" + UrlResumido + "/print.pdf?period_id="+ period.getId();
+                    newUrl = myUrl + "/" + building.getBuilding_id()  + "/" + UrlResumido + "/print.pdf?period_id="+ period.getId();
                 }else if (tipo.equalsIgnoreCase("detallado")){
                     newUrl = myUrl + "/" + building.getBuilding_id()  + "/" + UrlDetallado + "/print.pdf?period_id="+ period.getId();
                 }
-                Toast.makeText(getActivity(),newUrl ,Toast.LENGTH_LONG).show();
                 Uri  Download_Uri = Uri.parse(newUrl);
 
                 DownloadManager.Request request = new DownloadManager.Request(Download_Uri);
@@ -244,6 +243,11 @@ public class ReportFragment extends Fragment {
                 request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
                 downloadManager.enqueue(request);
                 Toast.makeText(getActivity(), "Descargando", Toast.LENGTH_LONG).show();
+
+            } else {
+                Toast.makeText(getActivity(), "No hay conexión a internet", Toast.LENGTH_SHORT).show();
+            }
+
 
             }
         });
@@ -329,5 +333,99 @@ public class ReportFragment extends Fragment {
 
         }
     };
+
+
+    public class PeriodListTask extends AsyncTask<Void, Void, String> {
+
+        String mtoken;
+        String murl_string;
+        HttpURLConnection conn;
+
+
+        PeriodListTask(String token, String url_string) {
+
+            mtoken = token;
+            murl_string = url_string;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+//            mProgressBar.setVisibility(View.VISIBLE);
+        }
+
+        @Override
+        protected String doInBackground(Void... params) {
+            // TODO: attempt authentication against a network service.
+
+            try {
+                //Create a URL object holding our url
+                URL myUrl = new URL(murl_string);
+                //Create a connection
+                HttpURLConnection connection = (HttpURLConnection)
+                        myUrl.openConnection();
+
+                //Set methods and timeouts
+                connection.setRequestMethod(REQUEST_METHOD);
+                connection.setReadTimeout(READ_TIMEOUT);
+                connection.setConnectTimeout(CONNECTION_TIMEOUT);
+//
+//
+                connection.setRequestProperty("Content-Type", "application/json");
+                connection.setRequestProperty("Accept", "application/json");
+                String token = " " + new String(mtoken);
+                connection.addRequestProperty("Authorization", token);
+                //Connect to our url
+                connection.connect();
+
+                int response_code = connection.getResponseCode();
+                //Create a new InputStreamReader
+                InputStream input = connection.getInputStream();
+                BufferedReader reader = new BufferedReader(new InputStreamReader(input, "UTF-8"));
+                String line;
+                StringBuffer sb = new StringBuffer();
+                while ((line = reader.readLine()) != null) {
+                    sb.append(line);
+                }
+                input.close();
+
+                String get_result = sb.toString();
+
+                JSONObject jsonObjectPeriod = new JSONObject(get_result);
+                periods = new ArrayList<Period>();
+                periods = PeriodController.fromJson(jsonObjectPeriod.getJSONArray("periods"));
+
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+                result = null;
+            } catch (IOException e) {
+                e.printStackTrace();
+                result = null;
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
+            return "success";
+            // TODO: register the new account here.
+
+        }
+
+        @Override
+        protected void onPostExecute(String success) {
+            ArrayAdapter<Period> dataAdapterPeriods = new ArrayAdapter<Period>(getActivity(),
+                    android.R.layout.select_dialog_item, periods);
+            dataAdapterPeriods.setDropDownViewResource(android.R.layout.select_dialog_item);
+            spnPeriods.setAdapter(dataAdapterPeriods);
+            dataAdapterPeriods.notifyDataSetChanged();
+
+        }
+
+        @Override
+        protected void onCancelled() {
+//            mProgressBar.setVisibility(View.GONE);
+//            mAuthTask = null;
+//            showProgress(false);
+        }
+    }
 
 }

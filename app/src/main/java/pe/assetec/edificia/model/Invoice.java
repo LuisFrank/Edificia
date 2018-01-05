@@ -15,7 +15,7 @@ public class Invoice {
     private Integer building_id;
     private Integer departament_id;
     private Double total;
-    private Date date_issue;
+    private String date_issue;
     private String date_due;
     private String number;
     private String departament_name;
@@ -123,11 +123,11 @@ public class Invoice {
         this.total = total;
     }
 
-    public Date getDate_issue() {
+    public String getDate_issue() {
         return date_issue;
     }
 
-    public void setDate_issue(Date date_issue) {
+    public void setDate_issue(String date_issue) {
         this.date_issue = date_issue;
     }
 
@@ -392,7 +392,8 @@ public class Invoice {
             b.setTotal(jsonObject.getDouble("total"));
             b.setBalance( jsonObject.getDouble("balance"));
             b.setDate_due( jsonObject.getString("date_due_format"));
-            b.setPaid( jsonObject.getBoolean("paid"));
+            b.setDate_issue( jsonObject.getString("date_issue_format"));
+            b.setPaid(jsonObject.getBoolean("paid"));
             b.setExpired( jsonObject.getBoolean("expired"));
         } catch (JSONException e) {
             e.printStackTrace();

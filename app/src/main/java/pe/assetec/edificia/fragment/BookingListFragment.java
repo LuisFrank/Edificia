@@ -1,20 +1,18 @@
 package pe.assetec.edificia.fragment;
 
+import android.app.FragmentManager;
 import android.content.Context;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.app.Fragment;
-import android.app.FragmentManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
-import android.widget.Toast;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -23,37 +21,33 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.Serializable;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 
 import pe.assetec.edificia.R;
-import pe.assetec.edificia.controller.CommentsController;
-import pe.assetec.edificia.controller.InvoicesController;
+import pe.assetec.edificia.controller.BookingsController;
 import pe.assetec.edificia.controller.TicketsController;
-import pe.assetec.edificia.model.Invoice;
+import pe.assetec.edificia.model.Booking;
 import pe.assetec.edificia.model.Ticket;
-import pe.assetec.edificia.util.HttpGetRequest;
 import pe.assetec.edificia.util.ManageSession;
 
 /**
  * A simple {@link Fragment} subclass.
  * Activities that contain this fragment must implement the
- * {@link TicketsListFragment.OnFragmentInteractionListener} interface
+ * {@link BookingListFragment.OnFragmentInteractionListener} interface
  * to handle interaction events.
- * Use the {@link TicketsListFragment#newInstance} factory method to
+ * Use the {@link BookingListFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class TicketsListFragment extends Fragment {
+public class BookingListFragment extends Fragment {
 
     //   RUTAS
     String myUrl = "http://edificia.pe/api/v1/buildings";
     //Localhost
-//    String myUrl = "http://localhost:3000/api/v1/buildings";
+//  String myUrl = "http://localhost:3000/api/v1/buildings";
     //String to place our result in
     String result;
     ManageSession session;
@@ -62,9 +56,9 @@ public class TicketsListFragment extends Fragment {
     Integer building_id  = 0;
     Integer departament_id = 0;
 
-    List<Ticket> datos;
+    List<Booking> datos;
     ListView listview ;
-    TicketsListAdapter listAdapter;
+    BookingListAdapter listAdapter;
     FloatingActionButton fab;
 
 
@@ -74,12 +68,18 @@ public class TicketsListFragment extends Fragment {
     private static final int REQUEST_READ_CONTACTS = 0;
 
 
+    // TODO: Rename parameter arguments, choose names that match
+    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
+    private static final String ARG_PARAM1 = "param1";
+    private static final String ARG_PARAM2 = "param2";
 
-
+    // TODO: Rename and change types of parameters
+    private String mParam1;
+    private String mParam2;
 
     private OnFragmentInteractionListener mListener;
 
-    public TicketsListFragment() {
+    public BookingListFragment() {
         // Required empty public constructor
     }
 
@@ -89,12 +89,16 @@ public class TicketsListFragment extends Fragment {
      *
      * @param param1 Parameter 1.
      * @param param2 Parameter 2.
-     * @return A new instance of fragment TicketsListFragment.
+     * @return A new instance of fragment BookingListFragment.
      */
-    // TODO: Rename and change types and number of parameters
-    public static TicketsListFragment newInstance(String param1, String param2) {
-        TicketsListFragment fragment = new TicketsListFragment();
 
+    // TODO: Rename and change types and number of parameters
+    public static BookingListFragment newInstance(String param1, String param2) {
+        BookingListFragment fragment = new BookingListFragment();
+        Bundle args = new Bundle();
+        args.putString(ARG_PARAM1, param1);
+        args.putString(ARG_PARAM2, param2);
+        fragment.setArguments(args);
         return fragment;
     }
 
@@ -102,7 +106,8 @@ public class TicketsListFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-
+            mParam1 = getArguments().getString(ARG_PARAM1);
+            mParam2 = getArguments().getString(ARG_PARAM2);
         }
     }
 
@@ -110,21 +115,22 @@ public class TicketsListFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View view = inflater.inflate(R.layout.fragment_tickets_list, container, false);
-        listview = (ListView) view.findViewById(R.id.lvFragmentTicketsList);
-        fab = (FloatingActionButton) view.findViewById(R.id.fabTicket);
+        View view =  inflater.inflate(R.layout.fragment_booking_list, container, false);
+
+        listview = (ListView) view.findViewById(R.id.lvFragmentBookingList);
+        fab = (FloatingActionButton) view.findViewById(R.id.fabBooking);
 
 
         session = new ManageSession(getActivity());
         // Inflate the layout for this fragment
 
-        String ticketsText=getArguments().getString("tickets");
+        String ticketsText=getArguments().getString("bookings");
         building_id = getArguments().getInt("building_id");
         departament_id = getArguments().getInt("departament_id");
 
-        String finalUrl = myUrl+ "/"+building_id+"/departaments/"+ departament_id+"/tickets/";
+        String finalUrl = myUrl+ "/"+building_id+"/departaments/"+ departament_id+"/bookings/";
 
-        TicketListTask taskTicket = new TicketListTask(session.getTOKEN(),finalUrl);
+        BookingListTask taskTicket = new BookingListTask(session.getTOKEN(),finalUrl);
         taskTicket.execute();
 
 
@@ -172,14 +178,15 @@ public class TicketsListFragment extends Fragment {
     }
 
 
-    public class TicketListTask extends AsyncTask<Void, Void, String> {
+
+    public class BookingListTask extends AsyncTask<Void, Void, String> {
 
         String mtoken;
         String murl_string;
         HttpURLConnection conn;
 
 
-        TicketListTask(String token, String url_string) {
+        BookingListTask(String token, String url_string) {
 
             mtoken = token;
             murl_string = url_string;
@@ -227,8 +234,8 @@ public class TicketsListFragment extends Fragment {
                 input.close();
 
                 String get_result = sb.toString();
-                datos = new ArrayList<Ticket>();
-                datos = TicketsController.fromJson(new JSONObject(get_result).getJSONArray("tickets"));
+                datos = new ArrayList<Booking>();
+                datos = BookingsController.fromJson(new JSONObject(get_result).getJSONArray("bookings"));
 
 
             } catch (MalformedURLException e) {
@@ -248,7 +255,7 @@ public class TicketsListFragment extends Fragment {
 
         @Override
         protected void onPostExecute(String success) {
-            listAdapter = new TicketsListAdapter(getActivity(),R.layout.row_layout_ticket,datos);
+            listAdapter = new BookingListAdapter(getActivity(), R.layout.row_layout_booking, datos);
             listview.setAdapter(listAdapter);
             listAdapter.notifyDataSetChanged();
 //            mProgressBar.setVisibility(View.GONE);
@@ -257,21 +264,18 @@ public class TicketsListFragment extends Fragment {
                 @Override
                 public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
 
-                    Ticket ticket = (Ticket)adapterView.getItemAtPosition(position);
+                    Booking booking = (Booking) adapterView.getItemAtPosition(position);
 
-                    Log.d("val:",building_id.toString());
-                    Log.d("val:",departament_id.toString());
-
-
+                    Log.d("val:", building_id.toString());
+                    Log.d("val:", departament_id.toString());
 
 
                     //set Fragmentclass Arguments
-                    Fragment mFrag = new CommentsListFragment();
-                    Bundle bundle=new Bundle();
-                    bundle.putInt("ticket_id",ticket.getId());
-                    bundle.putInt("building_id",building_id);
-                    bundle.putInt("departament_id",departament_id);
-                    bundle.putSerializable("ticket",ticket);
+                    android.app.Fragment mFrag = new CommentsListFragment();
+                    Bundle bundle = new Bundle();
+                    bundle.putInt("ticket_id", booking.getId());
+                    bundle.putInt("building_id", building_id);
+                    bundle.putInt("departament_id", departament_id);
                     mFrag.setArguments(bundle);
                     FragmentManager fragmentManager = getActivity().getFragmentManager();
                     fragmentManager.beginTransaction().replace(R.id.Contendor, mFrag).addToBackStack(null).commit();
@@ -283,10 +287,10 @@ public class TicketsListFragment extends Fragment {
                 @Override
                 public void onClick(View view) {
                     //set Fragmentclass Arguments
-                    Fragment mFrag = new TicketFormFragment();
-                    Bundle bundle=new Bundle();
-                    bundle.putInt("building_id",building_id);
-                    bundle.putInt("departament_id",departament_id);
+                    android.app.Fragment mFrag = new BookingCreateFragment();
+                    Bundle bundle = new Bundle();
+                    bundle.putInt("building_id", building_id);
+                    bundle.putInt("departament_id", departament_id);
                     mFrag.setArguments(bundle);
                     FragmentManager fragmentManager = getActivity().getFragmentManager();
                     fragmentManager.beginTransaction().replace(R.id.Contendor, mFrag).addToBackStack(null).commit();

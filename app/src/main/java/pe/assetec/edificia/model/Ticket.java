@@ -3,6 +3,7 @@ package pe.assetec.edificia.model;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.Serializable;
 import java.util.Date;
 import java.util.Timer;
 
@@ -10,7 +11,7 @@ import java.util.Timer;
  * Created by frank on 22/09/17.
  */
 
-public class Ticket {
+public class Ticket implements Serializable {
 
 
     private Integer id;
@@ -26,6 +27,8 @@ public class Ticket {
     private String name;
     private String created_at;
     private String created_at_format;
+    private String first_name;
+    private String last_name;
 
     public Ticket() {
 
@@ -147,6 +150,22 @@ public class Ticket {
         this.created_at_format = created_at_format;
     }
 
+    public String getFirst_name() {
+        return first_name;
+    }
+
+    public void setFirst_name(String first_name) {
+        this.first_name = first_name;
+    }
+
+    public String getLast_name() {
+        return last_name;
+    }
+
+    public void setLast_name(String last_name) {
+        this.last_name = last_name;
+    }
+
     public static Ticket fromJson(JSONObject jsonObject) {
         Ticket ticket  = new Ticket();
         // Deserialize json into object fields
@@ -159,6 +178,8 @@ public class Ticket {
             ticket.setName( jsonObject.getString("name"));
             ticket.setSummary( jsonObject.getString("summary"));
             ticket.setDescription( jsonObject.getString("description"));
+            ticket.setFirst_name(jsonObject.getString("person_name"));
+            ticket.setLast_name("");
         } catch (JSONException e) {
             e.printStackTrace();
             return null;

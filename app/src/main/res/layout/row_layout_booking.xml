@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:paddingBottom="8dp"
+    android:paddingLeft="25dp"
+    android:paddingRight="10dp"
+    android:paddingTop="10dp">
+
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/tvCommonAreaBookingLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="left"
+            android:text="@string/booking_common_area_name"
+            android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+            android:textStyle="bold" />
+
+
+    </LinearLayout>
+
+
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/tvCommonAreaBooking"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="left"
+            android:text="Area 1"
+            android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+            android:textColor="@android:color/black" />
+
+        <TextView
+            android:id="@+id/tvStatusBooking"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@android:color/holo_blue_bright"
+            android:gravity="end"
+            android:paddingLeft="25dp"
+            android:paddingRight="10dp"
+            android:text="Status1"
+            android:textAlignment="textEnd"
+            android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+            android:textColor="@android:color/black" />
+
+    </LinearLayout>
+
+
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/tvNameBooking"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="left"
+            android:text="Name"
+            android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+            android:textStyle="bold" />
+
+
+    </LinearLayout>
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:textAlignment="center">
+
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="horizontal"
+            android:textAlignment="center">
+
+            <TextView
+                android:id="@+id/tvFromBookingLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:text="@string/booking_from"
+                android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvDateInitialBooking"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:text="@string/invoice_total"
+                android:textAlignment="center"
+                android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                android:textColor="@android:color/black" />
+
+            <!--<TextView-->
+            <!--android:id="@+id/tvTimeInitialBooking"-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="match_parent"-->
+            <!--android:text="@string/invoice_total"-->
+            <!--android:textAlignment="center"-->
+            <!--android:textAppearance="@style/TextAppearance.AppCompat.Medium"-->
+            <!--android:textColor="@android:color/black" />-->
+        </LinearLayout>
+    </LinearLayout>
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:textAlignment="center">
+
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="horizontal"
+            android:textAlignment="center">
+
+            <TextView
+                android:id="@+id/tvToBookingLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:text="@string/booking_to"
+                android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvToDateFinalBooking"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:text="@string/invoice_total"
+                android:textAlignment="center"
+                android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                android:textColor="@android:color/black" />
+
+            <!--<TextView-->
+            <!--android:id="@+id/tvToTimeFinalBooking"-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="match_parent"-->
+            <!--android:text="@string/invoice_total"-->
+            <!--android:textAlignment="center"-->
+            <!--android:textAppearance="@style/TextAppearance.AppCompat.Medium"-->
+            <!--android:textColor="@android:color/black" />-->
+        </LinearLayout>
+    </LinearLayout>
+
+
+</LinearLayout>

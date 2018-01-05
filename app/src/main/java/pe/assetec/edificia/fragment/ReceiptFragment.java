@@ -42,8 +42,8 @@ public class ReceiptFragment extends Fragment {
     private static final String ARG_PARAM2 = "param2";
 
     //Some url endpoint that you may have
-    String myUrl = "http://localhost:3000/api/v1/buildings";
-//    String myUrl = "http://edificia.pe/api/v1/buildings";
+//    String myUrl = "http://localhost:3000/api/v1/buildings";
+    String myUrl = "http://edificia.pe/api/v1/buildings";
     //String to place our result in
     String result;
 

@@ -4,7 +4,7 @@
     <group android:checkableBehavior="single">
         <item
             android:id="@+id/nav_receipt"
-            android:icon="@drawable/ic_menu_camera"
+            android:icon="@drawable/ic_menu_gallery"
             android:title="Recibos" />
         <item
             android:id="@+id/nav_report"
@@ -12,7 +12,7 @@
             android:title="Informes Económicos" />
         <item
             android:id="@+id/nav_booking"
-            android:icon="@drawable/ic_menu_slideshow"
+            android:icon="@drawable/ic_menu_gallery"
             android:title="Reservas" />
         <item
             android:id="@+id/nav_ticket"

@@ -6,10 +6,10 @@
     <string name="prompt_password">Contraseña </string>
     <string name="action_sign_in">Ingresar</string>
     <string name="action_sign_in_short">Sign in</string>
-    <string name="error_invalid_email">This email address is invalid</string>
-    <string name="error_invalid_password">This password is too short</string>
-    <string name="error_incorrect_password">This password is incorrect</string>
-    <string name="error_field_required">This field is required</string>
+    <string name="error_invalid_email">El correo es invalido</string>
+    <string name="error_invalid_password">La contraseña es muy corta</string>
+    <string name="error_incorrect_password">Contraseña incorrecta</string>
+    <string name="error_field_required">Este campo es obligatiorio</string>
     <string name="permission_rationale">"Contacts permissions are needed for providing email
         completions."
     </string>
@@ -27,18 +27,31 @@
     <string name="hello_blank_fragment">Hello blank fragment</string>
 
     <!-- InvoiceDetail -->
+    <string name="invoice_date_issued">F. Emisión</string>
+    <string name="invoice_date_due">F. Vencimiento</string>
     <string name="invoice_name">Nombre</string>
     <string name="invoice_number">Numero Recibo</string>
     <string name="invoice_periods_names">Periodo</string>
     <string name="invoice_total">Total</string>
     <string name="invoice_balance">Saldo</string>
 
+    <!-- Booking -->
+    <string name="booking_common_area_name">Área</string>
+    <string name="booking_from">Inicio: </string>
+    <string name="booking_to">Final: </string>
 
-    <string-array name="TipoInforme">
+
+    <string-array name="TipoInformePerson">
+        <item>Detallado</item>
+    </string-array>
+
+    <string-array name="TipoInformeEmployee">
         <item>Resumido</item>
         <item>Detallado</item>
     </string-array>
 
 
     <string name="prompt_bluiding">Seleccione</string>
+
+
 </resources>

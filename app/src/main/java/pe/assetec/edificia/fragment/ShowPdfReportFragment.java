@@ -52,10 +52,8 @@ public class ShowPdfReportFragment extends Fragment {
 
     String UrlDetallado = "economic_reports";
     String UrlResumido = "economic_report_groupeds";
-//    String myUrl = "http://edificia.pe/api/v1/buildings";
-
-    String myUrl = "http://localhost:3000/api/v1/buildings";
-//    String myUrl = "http://edificia.pe/api/v1/buildings";
+//    String myUrl = "http://localhost:3000/api/v1/buildings";
+    String myUrl = "http://edificia.pe/api/v1/buildings";
 
     WebView wv;
     PDFView pdfv;
@@ -163,14 +161,12 @@ public class ShowPdfReportFragment extends Fragment {
         String fileName = "";
         @Override
         protected void onPreExecute() {
-            Log.w("ENTRO PRE", "------------------------------");
             super.onPreExecute();
             pDialog.setVisibility(View.VISIBLE);
         }
 
         @Override
         protected String doInBackground(String... strings) {
-            Log.w("ENTRO BACK", "------------------------------");
             String stringUrl = strings[0];
             String stringToken = strings[1];
             try {
@@ -181,10 +177,6 @@ public class ShowPdfReportFragment extends Fragment {
 
                 HttpURLConnection httpConn = null;
                 httpConn = (HttpURLConnection) url.openConnection();
-                //Set methods and timeouts
-                //                httpConn.setRequestMethod(REQUEST_METHOD);
-                //                httpConn.setReadTimeout(READ_TIMEOUT);
-                //                httpConn.setConnectTimeout(CONNECTION_TIMEOUT);
                 String token = " " +new String(stringToken);
                 httpConn.addRequestProperty ("Authorization", token);
                 //Connect to our url
@@ -192,10 +184,8 @@ public class ShowPdfReportFragment extends Fragment {
                 int responseCode = 0;
                 responseCode = httpConn.getResponseCode();
 
-                Log.w("ENTRO URL CONN", "------------------------------");
                 // always check HTTP response code first
                 if (responseCode == HttpURLConnection.HTTP_OK) {
-                    Log.w("ENTRO HTTTP OK", "------------------------------");
                     fileName = "";
                     String disposition = httpConn.getHeaderField("Content-Disposition");
                     String contentType = httpConn.getContentType();
@@ -208,16 +198,8 @@ public class ShowPdfReportFragment extends Fragment {
                             fileName = disposition.substring(index + 10,
                                     disposition.length() - 1);
                         }
-                        //                } else {
-                        //                    // extracts file name from URL
-                        //                    fileName = fileURL.substring(fileURL.lastIndexOf("/") + 1,
-                        //                            fileURL.length());
                     }
 
-                    System.out.println("Content-Type = " + contentType);
-                    System.out.println("Content-Disposition = " + disposition);
-                    System.out.println("Content-Length = " + contentLength);
-                    System.out.println("fileName = " + fileName);
                     try {
                         // opens input stream from the HTTP connection
                         InputStream inputStream = null;
@@ -229,11 +211,6 @@ public class ShowPdfReportFragment extends Fragment {
                         folder.mkdir();
 
                         File pdfFile = new File(folder, fileName);
-
-                        // opens an output stream to save into file
-                        System.out.println("FILEEEEEEEEEE");
-                        System.out.println(pdfFile.getAbsolutePath());
-                        System.out.println("====");
                         FileOutputStream outputStream = null;
                         outputStream = new FileOutputStream(pdfFile);
 
@@ -256,10 +233,10 @@ public class ShowPdfReportFragment extends Fragment {
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
-                    System.out.println("File downloaded");
+
                     result = "success";
                 } else {
-                    System.out.println("No file to download. Server replied HTTP code: " + responseCode);
+
                     result = "failed";
                 }
 
@@ -275,15 +252,12 @@ public class ShowPdfReportFragment extends Fragment {
 
         @Override
         protected void onPostExecute(String result) {
-            Log.w("ENTRO POST EXECUTE", "------------------------------");
             pDialog.setVisibility(View.GONE);
             if (result.equalsIgnoreCase("success")){
 
 
-                Toast.makeText(getActivity(), "Download PDf successfully", Toast.LENGTH_SHORT).show();
-
-                Log.d("Download complete", "----------");
-                File file = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator + fileName);
+                Toast.makeText(getActivity(), fileName, Toast.LENGTH_SHORT).show();
+              File file = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator + fileName);
                 pdfv.fromFile(file).enableSwipe(true) // allows to block changing pages using swipe
                         .swipeHorizontal(false)
                         .enableDoubletap(true)
@@ -295,7 +269,7 @@ public class ShowPdfReportFragment extends Fragment {
                         .spacing(0)
                         .load();
             }else{
-                Toast.makeText(getActivity(), "Download PDf noooooo", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getActivity(), "No se puedo visualizar el PDF", Toast.LENGTH_SHORT).show();
 
             }
         }

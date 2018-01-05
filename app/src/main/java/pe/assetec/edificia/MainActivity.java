@@ -18,8 +18,11 @@ import android.view.MenuItem;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import pe.assetec.edificia.fragment.BookingCreateFragment;
 import pe.assetec.edificia.fragment.BookingFragment;
+import pe.assetec.edificia.fragment.BookingListFragment;
 import pe.assetec.edificia.fragment.CommentsListFragment;
+import pe.assetec.edificia.fragment.DefaultFragment;
 import pe.assetec.edificia.fragment.InvoiceDetailFragment;
 import pe.assetec.edificia.fragment.InvoicesListFragment;
 import pe.assetec.edificia.fragment.ReceiptFragment;
@@ -35,7 +38,7 @@ public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener,ReceiptFragment.OnFragmentInteractionListener,ReportFragment.OnFragmentInteractionListener,
         BookingFragment.OnFragmentInteractionListener, TicketFragment.OnFragmentInteractionListener, InvoicesListFragment.OnFragmentInteractionListener , InvoiceDetailFragment.OnFragmentInteractionListener,
         TicketsListFragment.OnFragmentInteractionListener, CommentsListFragment.OnFragmentInteractionListener,
-        TicketFormFragment.OnFragmentInteractionListener, ShowPDFFragment.OnFragmentInteractionListener, ShowPdfReportFragment.OnFragmentInteractionListener {
+        TicketFormFragment.OnFragmentInteractionListener, ShowPDFFragment.OnFragmentInteractionListener, ShowPdfReportFragment.OnFragmentInteractionListener, DefaultFragment.OnFragmentInteractionListener, BookingListFragment.OnFragmentInteractionListener, BookingCreateFragment.OnFragmentInteractionListener {
     ManageSession session;
 
 
@@ -48,6 +51,12 @@ public class MainActivity extends AppCompatActivity
 
         //Session
         session=new ManageSession(MainActivity.this);
+
+
+
+        Fragment fragment = null;
+        fragment=  new DefaultFragment();
+        getFragmentManager().beginTransaction().replace(R.id.Contendor,fragment).addToBackStack(null).commit();
 
 
 
@@ -74,29 +83,10 @@ public class MainActivity extends AppCompatActivity
         navigationView.setNavigationItemSelectedListener(this);
 
         View hView =  navigationView.getHeaderView(0);
-        textViewUser = (TextView)hView.findViewById(R.id.textViewUserEmail);
+        textViewUser = (TextView)hView.findViewById(R.id.textViewUserName);
         textViewUser.setText(session.getUserName());
     }
 
-//    @Override
-//    public void onBackPressed() {
-//        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-//        if (drawer.isDrawerOpen(GravityCompat.START)) {
-//            drawer.closeDrawer(GravityCompat.START);
-//        } else {
-//
-//            if (getSupportFragmentManager().getBackStackEntryCount() > 1) {
-//                getSupportFragmentManager().popBackStack();
-//            } else {
-//                finish();
-//                super.onBackPressed();
-//            }
-//
-//
-//        }
-//
-//
-//    }
 
     @Override
     public void onBackPressed() {
@@ -128,9 +118,9 @@ public class MainActivity extends AppCompatActivity
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
+//        if (id == R.id.action_settings) {
+//            return true;
+//        }
 
         return super.onOptionsItemSelected(item);
     }

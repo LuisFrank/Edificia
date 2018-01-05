@@ -7,7 +7,10 @@
 
     <!-- TODO: Update blank fragment layout -->
 
-
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        >
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -31,6 +34,8 @@
 
         </LinearLayout>
 
+
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -40,6 +45,65 @@
             android:paddingLeft="25dp"
             android:paddingTop="10dp"
             android:textAlignment="center">
+
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:textAlignment="center">
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:layout_weight="1"
+                    android:textAlignment="center">
+
+                <TextView
+                    android:id="@+id/tvdInvoiceDateIssuedLabel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:text="@string/invoice_date_issued"
+                    android:textStyle="bold"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Medium"/>
+
+                <TextView
+                    android:id="@+id/tvdInvoiceDateIssued"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:text="@string/invoice_total"
+                    android:textAlignment="center"
+                    android:textColor="@android:color/black"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Medium"/>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:layout_weight="1"
+                    android:textAlignment="center">
+
+                <TextView
+                    android:id="@+id/tvdInvoiceDateDuelabel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:text="@string/invoice_date_due"
+                    android:textStyle="bold"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Medium"/>
+
+                <TextView
+                    android:id="@+id/tvdInvoiceDateDue"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:text="@string/invoice_balance"
+                    android:textAlignment="center"
+                    android:textColor="@android:color/black"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Medium"/>
+
+                </LinearLayout>
+            </LinearLayout>
 
 
             <TextView
@@ -169,7 +233,7 @@
 
 
     </LinearLayout>
-
+    </ScrollView>
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/fabInvoice"

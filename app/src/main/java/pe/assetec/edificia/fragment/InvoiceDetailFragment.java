@@ -41,11 +41,13 @@ public class InvoiceDetailFragment extends Fragment {
     DownloadManager downloadManager;
     //   RUTAS
     //http://edificia.pe/api/v1/buildings/1/departaments/1/invoices/1/print.pdf
-   //   String myUrl = "http://edificia.pe/api/v1/buildings";
+      String myUrl = "http://edificia.pe/api/v1/buildings";
     //Localhost
-    String myUrl = "http://localhost:3000/api/v1/buildings";
+//    String myUrl = "http://localhost:3000/api/v1/buildings";
     ManageSession session;
 
+    private TextView mInvoiceDateIssued;
+    private TextView mInvoiceDateDue;
     private TextView mInvoiceNameView;
     private TextView mInvoiceNumberView;
     private TextView mInvoicePeriodNamesView;
@@ -93,6 +95,8 @@ public class InvoiceDetailFragment extends Fragment {
         }
         Invoice invoice =  new Invoice();
 
+          mInvoiceDateIssued = (TextView)  view.findViewById(R.id.tvdInvoiceDateIssued);
+          mInvoiceDateDue = (TextView)  view.findViewById(R.id.tvdInvoiceDateDue);
           mInvoiceNameView = (TextView)  view.findViewById(R.id.tvdInvoiceName);
           mInvoiceNumberView = (TextView)  view.findViewById(R.id.tvdInvoiceNumber);
           mInvoicePeriodNamesView = (TextView)  view.findViewById(R.id.tvdInvoicePeriodName);
@@ -105,6 +109,8 @@ public class InvoiceDetailFragment extends Fragment {
         InvoiceDetailAdapter listAdapter;
         try {
             invoice =  invoice.fromJson(jsonObject.getJSONObject("full_invoice").put("id","1"));
+            mInvoiceDateIssued.setText(invoice.getDate_issue());
+            mInvoiceDateDue.setText(invoice.getDate_due());
             mInvoiceNameView.setText(invoice.getName());
             mInvoiceNumberView.setText(invoice.getNumber());
             mInvoicePeriodNamesView.setText(invoice.getPeriods_names());
