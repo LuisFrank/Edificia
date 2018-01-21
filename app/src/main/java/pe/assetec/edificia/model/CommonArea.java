@@ -1,7 +1,10 @@
 package pe.assetec.edificia.model;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.util.ArrayList;
 
 /**
  * Created by frank on 16/10/17.
@@ -17,6 +20,7 @@ public class CommonArea {
     private String regulation;
     private Integer minimun;
     private Boolean automatic_approvement;
+    private ArrayList<Block> bloks;
 
 
     public Integer getId() {
@@ -83,6 +87,14 @@ public class CommonArea {
         this.automatic_approvement = automatic_approvement;
     }
 
+    public ArrayList<Block> getBloks() {
+        return bloks;
+    }
+
+    public void setBloks(ArrayList<Block> bloks) {
+        this.bloks = bloks;
+    }
+
     public static CommonArea fromJson(JSONObject jsonObject) {
         CommonArea commom_area  = new CommonArea();
         // Deserialize json into object fields
@@ -96,6 +108,11 @@ public class CommonArea {
             {
                 commom_area.setAutomatic_approvement(jsonObject.getBoolean("automatic_approvement"));
             }
+            JSONArray jsonArrayBlocks = jsonObject.getJSONArray("blocks");
+            ArrayList<Block> arrayBlocks = new ArrayList<Block>();
+            arrayBlocks = fromJson(jsonArrayBlocks);
+            commom_area.setBloks(arrayBlocks);
+
 
 
         } catch (JSONException e) {
@@ -104,6 +121,25 @@ public class CommonArea {
         }
         // Return new object
         return commom_area;
+    }
+
+    public static ArrayList<Block> fromJson(JSONArray jsonArray) {
+        JSONObject blockJson;
+        ArrayList<Block> blocks = new ArrayList<Block>(jsonArray.length());
+        // Process each result in json array, decode and convert to business object
+        for (int i=0; i < jsonArray.length(); i++) {
+            try {
+                blockJson = jsonArray.getJSONObject(i);
+            } catch (Exception e) {
+                e.printStackTrace();
+                continue;
+            }
+            Block block = Block.fromJson(blockJson);
+            if (block != null) {
+                blocks.add(block);
+            }
+        }
+        return blocks;
     }
 
 

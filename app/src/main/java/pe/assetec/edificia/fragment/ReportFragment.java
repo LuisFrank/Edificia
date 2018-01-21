@@ -68,12 +68,15 @@ public class ReportFragment extends Fragment {
     public static final int READ_TIMEOUT=15000;
 
     Spinner spnBuildings, spnPeriods, spnTypeinfo;
+    FloatingActionButton faba;
     Button  buttonDownload;
+    ProgressBar pbReport, pbPeriod;
+    View reportForm, periodForm;
     //Some url endpoint that you may have
-//    String myUrl = "http://localhost:3000/api/v1/buildings";
+    String myUrl = "http://localhost:3000/api/v1/buildings";
     String UrlDetallado = "economic_reports";
     String UrlResumido = "economic_report_groupeds";
-    String myUrl = "http://edificia.pe/api/v1/buildings";
+//    String myUrl = "http://edificia.pe/api/v1/buildings";
     //String to place our result in
     String result;
 
@@ -130,20 +133,24 @@ public class ReportFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
-
-//        progressBar = view.findViewById(R.id.login_progressReport);
-//        progressBar.setVisibility(View.VISIBLE);
         downloadManager = (DownloadManager)getActivity().getSystemService(Context.DOWNLOAD_SERVICE);
         getActivity().registerReceiver(onComplete, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
         // Inflate the layout for this fragment
         session = new ManageSession(getActivity());
         View view = inflater.inflate(R.layout.fragment_report, container, false);
         spnBuildings = view.findViewById(R.id.spnBuildingsFR);
-//        spnDepartament = view.findViewById(R.id.spnDepartamentsFR);
+        faba = (FloatingActionButton) view.findViewById(R.id.fabReport);
         spnPeriods = view.findViewById(R.id.spnPeriodsFR);
         spnTypeinfo = view.findViewById(R.id.spnTipoInformeFR);
         buttonDownload = view.findViewById(R.id.btnDescargarFR);
 
+        pbReport = (ProgressBar) view.findViewById(R.id.progressBarReport);
+        pbPeriod = (ProgressBar) view.findViewById(R.id.progressBarPeriod);
+        reportForm = view.findViewById(R.id.report_form);
+        periodForm = view.findViewById(R.id.period_form);
+
+
+        showProgressReport(true);
 
         List<Building> datos;
         datos =  new ArrayList<Building>();
@@ -171,6 +178,10 @@ public class ReportFragment extends Fragment {
             e.printStackTrace();
         }
 
+        if (uniqueBuildings.size() != 0){
+            showProgressReport(false);
+        }
+
         adapter = new ArrayAdapter<Building> (getActivity(),android.R.layout.select_dialog_item,uniqueBuildings);
         spnBuildings.setAdapter(adapter);
         adapter.notifyDataSetChanged();
@@ -192,23 +203,18 @@ public class ReportFragment extends Fragment {
 
                     // TODO Auto-generated method stub
                     Building building = finalDatos.get(pos);
+                    String selected_item = adapterView.getItemAtPosition(pos).toString();
 
-                    if (building.getBuilding_id() != 0) {
-
-                        String auth_token = session.getTOKEN();
-
-                        String finalUrl;
-                        //
-                        finalUrl = myUrl + "/" + building.getBuilding_id() + "/periods/";
-                        PeriodListTask taskperiod = new PeriodListTask( auth_token,finalUrl);
-                        taskperiod.execute();
-
-
-                    } else {
-                        Toast.makeText(getActivity(), "No existen Periodos", Toast.LENGTH_LONG).show();
+                    if(selected_item.matches("")){
+                        showPeriod(false);
+                        return;
                     }
-
-
+                    showProgressPeriod(true);
+                    String auth_token = session.getTOKEN();
+                    String finalUrl;
+                    finalUrl = myUrl + "/" + building.getBuilding_id() + "/periods/";
+                    PeriodListTask taskperiod = new PeriodListTask( auth_token,finalUrl);
+                    taskperiod.execute();
             }
 
             public void onNothingSelected(AdapterView<?> parent) {
@@ -253,7 +259,6 @@ public class ReportFragment extends Fragment {
         });
 
 
-        FloatingActionButton faba = (FloatingActionButton) view.findViewById(R.id.fabReport);
 
         faba.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -412,20 +417,42 @@ public class ReportFragment extends Fragment {
 
         @Override
         protected void onPostExecute(String success) {
+            showProgressPeriod(false);
             ArrayAdapter<Period> dataAdapterPeriods = new ArrayAdapter<Period>(getActivity(),
                     android.R.layout.select_dialog_item, periods);
             dataAdapterPeriods.setDropDownViewResource(android.R.layout.select_dialog_item);
             spnPeriods.setAdapter(dataAdapterPeriods);
             dataAdapterPeriods.notifyDataSetChanged();
 
+            if (periods.size() == 0){
+                Toast.makeText(getActivity(), "No existen Periodos", Toast.LENGTH_LONG).show();
+                showPeriod(false);
+            }else{
+                showPeriod(true);
+            }
         }
 
         @Override
         protected void onCancelled() {
-//            mProgressBar.setVisibility(View.GONE);
-//            mAuthTask = null;
-//            showProgress(false);
+            showProgressPeriod(false);
+
         }
+    }
+
+    private void showProgressReport(final boolean show) {
+        reportForm.setVisibility(show ? View.GONE: View.VISIBLE);
+        pbReport.setVisibility(show ? View.VISIBLE: View.GONE);
+
+    }
+
+    private void showProgressPeriod(final boolean show) {
+        periodForm.setVisibility(show ? View.GONE: View.VISIBLE);
+        pbPeriod.setVisibility(show ? View.VISIBLE: View.GONE);
+
+    }
+
+    private void showPeriod(final boolean show) {
+        periodForm.setVisibility(show ? View.VISIBLE: View.GONE);
     }
 
 }

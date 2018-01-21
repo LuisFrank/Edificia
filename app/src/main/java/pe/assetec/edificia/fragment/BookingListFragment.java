@@ -13,6 +13,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -45,9 +46,9 @@ import pe.assetec.edificia.util.ManageSession;
 public class BookingListFragment extends Fragment {
 
     //   RUTAS
-    String myUrl = "http://edificia.pe/api/v1/buildings";
+//    String myUrl = "http://edificia.pe/api/v1/buildings";
     //Localhost
-//  String myUrl = "http://localhost:3000/api/v1/buildings";
+  String myUrl = "http://localhost:3000/api/v1/buildings";
     //String to place our result in
     String result;
     ManageSession session;
@@ -55,6 +56,9 @@ public class BookingListFragment extends Fragment {
 
     Integer building_id  = 0;
     Integer departament_id = 0;
+
+    ProgressBar pbBookingList;
+    View bookingList;
 
     List<Booking> datos;
     ListView listview ;
@@ -117,23 +121,20 @@ public class BookingListFragment extends Fragment {
         // Inflate the layout for this fragment
         View view =  inflater.inflate(R.layout.fragment_booking_list, container, false);
 
+        pbBookingList = (ProgressBar) view.findViewById(R.id.progressBarBookingLit);
+        bookingList = view.findViewById(R.id.booking_list);
         listview = (ListView) view.findViewById(R.id.lvFragmentBookingList);
         fab = (FloatingActionButton) view.findViewById(R.id.fabBooking);
 
-
         session = new ManageSession(getActivity());
         // Inflate the layout for this fragment
-
-        String ticketsText=getArguments().getString("bookings");
         building_id = getArguments().getInt("building_id");
         departament_id = getArguments().getInt("departament_id");
 
         String finalUrl = myUrl+ "/"+building_id+"/departaments/"+ departament_id+"/bookings/";
-
+        showProgress(true);
         BookingListTask taskTicket = new BookingListTask(session.getTOKEN(),finalUrl);
         taskTicket.execute();
-
-
 
         return view;
     }
@@ -176,8 +177,6 @@ public class BookingListFragment extends Fragment {
         // TODO: Update argument type and name
         void onFragmentInteraction(Uri uri);
     }
-
-
 
     public class BookingListTask extends AsyncTask<Void, Void, String> {
 
@@ -255,33 +254,34 @@ public class BookingListFragment extends Fragment {
 
         @Override
         protected void onPostExecute(String success) {
+            showProgress(false);
             listAdapter = new BookingListAdapter(getActivity(), R.layout.row_layout_booking, datos);
             listview.setAdapter(listAdapter);
             listAdapter.notifyDataSetChanged();
 //            mProgressBar.setVisibility(View.GONE);
 
-            listview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                @Override
-                public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
-
-                    Booking booking = (Booking) adapterView.getItemAtPosition(position);
-
-                    Log.d("val:", building_id.toString());
-                    Log.d("val:", departament_id.toString());
-
-
-                    //set Fragmentclass Arguments
-                    android.app.Fragment mFrag = new CommentsListFragment();
-                    Bundle bundle = new Bundle();
-                    bundle.putInt("ticket_id", booking.getId());
-                    bundle.putInt("building_id", building_id);
-                    bundle.putInt("departament_id", departament_id);
-                    mFrag.setArguments(bundle);
-                    FragmentManager fragmentManager = getActivity().getFragmentManager();
-                    fragmentManager.beginTransaction().replace(R.id.Contendor, mFrag).addToBackStack(null).commit();
-
-                }
-            });
+//            listview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+//                @Override
+//                public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
+//
+//                    Booking booking = (Booking) adapterView.getItemAtPosition(position);
+//
+//                    Log.d("val:", building_id.toString());
+//                    Log.d("val:", departament_id.toString());
+//
+//
+//                    //set Fragmentclass Arguments
+//                    android.app.Fragment mFrag = new CommentsListFragment();
+//                    Bundle bundle = new Bundle();
+//                    bundle.putInt("ticket_id", booking.getId());
+//                    bundle.putInt("building_id", building_id);
+//                    bundle.putInt("departament_id", departament_id);
+//                    mFrag.setArguments(bundle);
+//                    FragmentManager fragmentManager = getActivity().getFragmentManager();
+//                    fragmentManager.beginTransaction().replace(R.id.Contendor, mFrag).addToBackStack(null).commit();
+//
+//                }
+//            });
 
             fab.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -301,9 +301,13 @@ public class BookingListFragment extends Fragment {
 
         @Override
         protected void onCancelled() {
-//            mProgressBar.setVisibility(View.GONE);
-//            mAuthTask = null;
-//            showProgress(false);
+          showProgress(false);
         }
+    }
+
+    private void showProgress(final boolean show) {
+        bookingList.setVisibility(show ? View.GONE: View.VISIBLE);
+        pbBookingList.setVisibility(show ? View.VISIBLE: View.GONE);
+
     }
 }

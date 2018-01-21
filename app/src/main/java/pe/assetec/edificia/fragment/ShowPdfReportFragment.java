@@ -52,16 +52,13 @@ public class ShowPdfReportFragment extends Fragment {
 
     String UrlDetallado = "economic_reports";
     String UrlResumido = "economic_report_groupeds";
-//    String myUrl = "http://localhost:3000/api/v1/buildings";
-    String myUrl = "http://edificia.pe/api/v1/buildings";
+    String myUrl = "http://localhost:3000/api/v1/buildings";
+//    String myUrl = "http://edificia.pe/api/v1/buildings";
 
-    WebView wv;
+    ProgressBar pbReport;
+    View reportPdf;
     PDFView pdfv;
     ManageSession session;
-
-
-    // Progress dialog
-    private View pDialog;
 
     private OnFragmentInteractionListener mListener;
 
@@ -69,14 +66,6 @@ public class ShowPdfReportFragment extends Fragment {
         // Required empty public constructor
     }
 
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment ShowPdfReport.
-     */
     // TODO: Rename and change types and number of parameters
     public static ShowPdfReportFragment newInstance(String param1, String param2) {
         ShowPdfReportFragment fragment = new ShowPdfReportFragment();
@@ -98,20 +87,16 @@ public class ShowPdfReportFragment extends Fragment {
         session = new ManageSession(getActivity());
 
         pdfv = (PDFView) v.findViewById(R.id.pdfViewReport);
-        pDialog = (ProgressBar) v.findViewById(R.id.progress_pdf_report);
-
+        pbReport = (ProgressBar) v.findViewById(R.id.progressBarReport);
+        reportPdf =  v.findViewById(R.id.report_pdf);
         String url_report =   getArguments().getString("url_report");
 
         final String token = session.getTOKEN();
-//        final String newtoken = " " +new String(token);
-
+        showProgress(true);
         DownloadFileReport dfr = new DownloadFileReport();
         dfr.execute(url_report,token);
-        // Inflate the layout for this fragment
+
         return v;
-
-
-
     }
 
     // TODO: Rename method, update argument and hook method into UI event
@@ -162,7 +147,6 @@ public class ShowPdfReportFragment extends Fragment {
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            pDialog.setVisibility(View.VISIBLE);
         }
 
         @Override
@@ -170,8 +154,6 @@ public class ShowPdfReportFragment extends Fragment {
             String stringUrl = strings[0];
             String stringToken = strings[1];
             try {
-
-
                 URL url = null;
                 url = new URL(stringUrl);
 
@@ -252,7 +234,7 @@ public class ShowPdfReportFragment extends Fragment {
 
         @Override
         protected void onPostExecute(String result) {
-            pDialog.setVisibility(View.GONE);
+            showProgress(false);
             if (result.equalsIgnoreCase("success")){
 
 
@@ -296,6 +278,12 @@ public class ShowPdfReportFragment extends Fragment {
                     REQUEST_EXTERNAL_STORAGE
             );
         }
+    }
+
+    private void showProgress(final boolean show) {
+        reportPdf.setVisibility(show ? View.GONE: View.VISIBLE);
+        pbReport.setVisibility(show ? View.VISIBLE: View.GONE);
+
     }
 
 }

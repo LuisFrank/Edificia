@@ -5,7 +5,7 @@
     tools:context="pe.assetec.edificia.fragment.ShowPdfReportFragment">
 
     <ProgressBar
-        android:id="@+id/progress_pdf_report"
+        android:id="@+id/progressBarReport"
         style="?android:attr/progressBarStyleLarge"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
@@ -13,10 +13,16 @@
         android:layout_marginBottom="8dp"
         android:visibility="gone" />
 
-
-    <com.github.barteksc.pdfviewer.PDFView
-        android:id="@+id/pdfViewReport"
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/report_pdf"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+            <com.github.barteksc.pdfviewer.PDFView
+                android:id="@+id/pdfViewReport"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"/>
+
+    </LinearLayout>
 
 </FrameLayout>

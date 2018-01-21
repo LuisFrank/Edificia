@@ -5,7 +5,15 @@
     tools:context="pe.assetec.edificia.fragment.TicketsListFragment">
 
     <!-- TODO: Update blank fragment layout -->
+    <ProgressBar
+        android:id="@+id/progressBarTicketList"
+        style="?android:attr/progressBarStyle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"/>
+
     <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/ticket_list"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical">

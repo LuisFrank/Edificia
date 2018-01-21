@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -24,10 +25,12 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -58,9 +61,9 @@ import pe.assetec.edificia.util.ManageSession;
  */
 public class CommentsListFragment extends Fragment {
     //   RUTAS
-   String myUrl = "http://edificia.pe/api/v1/buildings";
+//   String myUrl = "http://edificia.pe/api/v1/buildings";
     //Localhost
-//  String myUrl = "http://localhost:3000/api/v1/buildings";
+  String myUrl = "http://localhost:3000/api/v1/buildings";
     //String to place our result in
     String result;
     ManageSession session;
@@ -71,6 +74,9 @@ public class CommentsListFragment extends Fragment {
     Button buttonComment;
     EditText etComment;
     private ProgressBar mProgressBar;
+    ProgressBar pbButton;
+    View comment_form;
+    View comment_button;
 
     public static final String REQUEST_METHOD = "GET";
     public static final int CONNECTION_TIMEOUT=10000;
@@ -122,7 +128,6 @@ public class CommentsListFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-
         if (getArguments() != null) {
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
@@ -142,7 +147,9 @@ public class CommentsListFragment extends Fragment {
         buttonComment = (Button) view.findViewById(R.id.btnComment);
         etComment= (EditText)view.findViewById(R.id.etComment);
         mProgressBar = (ProgressBar) view.findViewById(R.id.login_progressComment);
-
+        pbButton = (ProgressBar) view.findViewById(R.id.progressBarButton);
+        comment_form = view.findViewById(R.id.comment_form);
+        comment_button = view.findViewById(R.id.comment_button);
         // Inflate the layout for this fragment
 
           ticket_id =getArguments().getInt("ticket_id");
@@ -151,14 +158,9 @@ public class CommentsListFragment extends Fragment {
         Ticketobject= (Ticket) getArguments().getSerializable("ticket");
 
 
-        comments = new ArrayList<Comment>();
-        Comment cm = new Comment();
-        cm.setCreated_at(Ticketobject.getCreated_at());
-        cm.setBody(Ticketobject.getDescription());
-        cm.setFirst_name(Ticketobject.getFirst_name());
-        cm.setLast_name(Ticketobject.getLast_name());
-        comments.add(cm);
 
+
+        showProgress(true);
         final String auth_token =  session.getTOKEN();
         String finalUrl =myUrl+ "/"+building_id+"/departaments/"+ departament_id+"/tickets/"+ticket_id;
         CommentsTask tas = new CommentsTask(auth_token,finalUrl);
@@ -168,10 +170,17 @@ public class CommentsListFragment extends Fragment {
         buttonComment.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                String finalUrl = "";
-                finalUrl = myUrl + "/"+building_id+"/departaments/"+ departament_id+"/tickets/"+ticket_id + "/comments";
-                CommentPostTask cTaks = new CommentPostTask(auth_token,finalUrl,etComment.getText().toString());
-                cTaks.execute();
+
+                boolean cancel = ValidateForm();
+
+                if (cancel) {
+
+                } else {
+                    String finalUrl = "";
+                    finalUrl = myUrl + "/"+building_id+"/departaments/"+ departament_id+"/tickets/"+ticket_id + "/comments";
+                    CommentPostTask cTaks = new CommentPostTask(auth_token,finalUrl,etComment.getText().toString());
+                    cTaks.execute();
+                }
             }
         });
 
@@ -224,7 +233,14 @@ public class CommentsListFragment extends Fragment {
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            mProgressBar.setVisibility(View.VISIBLE);
+            comments = new ArrayList<Comment>();
+            Comment cm = new Comment();
+            cm.setCreated_at(Ticketobject.getCreated_at());
+            cm.setBody(Ticketobject.getDescription());
+            cm.setFirst_name(Ticketobject.getFirst_name());
+            cm.setLast_name(Ticketobject.getLast_name());
+            comments.add(cm);
+
         }
 
         @Override
@@ -283,16 +299,17 @@ public class CommentsListFragment extends Fragment {
 
         @Override
         protected void onPostExecute(String success) {
-
+            showProgress(false);
+            showProgressComment(false);
             listAdapter = new CommentsListAdapter(getActivity(),R.layout.row_layout_comment,comments);
             listview.setAdapter(listAdapter);
             listAdapter.notifyDataSetChanged();
-            mProgressBar.setVisibility(View.GONE);
+
         }
 
         @Override
         protected void onCancelled() {
-            mProgressBar.setVisibility(View.GONE);
+            showProgress(false);
 //            mAuthTask = null;
 //            showProgress(false);
         }
@@ -320,7 +337,7 @@ public class CommentsListFragment extends Fragment {
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            mProgressBar.setVisibility(View.VISIBLE);
+            showProgressComment(true);
         }
 
 
@@ -354,20 +371,13 @@ public class CommentsListFragment extends Fragment {
 
 
 
-
-                // setDoInput and setDoOutput method depict handling of both send and receive
-
-                // Append parameters to URL
-                DataOutputStream out = new DataOutputStream(conn.getOutputStream());
-
-
                 JSONObject jsonobj = new JSONObject();
                 jsonobj.put("body", comment);
 
-
-                out.writeBytes(jsonobj.toString());
-                out.flush();
-                out.close();
+                BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(conn.getOutputStream(), "UTF-8"));
+                bw.write(jsonobj.toString());
+                bw.flush();
+                bw.close();
                 conn.connect();
                 Log.e("url", url.toString());
 
@@ -423,7 +433,7 @@ public class CommentsListFragment extends Fragment {
         @Override
         protected void onPostExecute(String success) {
 
-            mProgressBar.setVisibility(View.GONE);
+            showProgressComment(true);
             Log.e("succes",success);
             JSONObject jsonObject = null;
             try {
@@ -464,6 +474,30 @@ public class CommentsListFragment extends Fragment {
 
 
 
+    private void showProgress(final boolean show) {
+        comment_form.setVisibility(show ? View.GONE: View.VISIBLE);
+        mProgressBar.setVisibility(show ? View.VISIBLE: View.GONE);
 
+    }
+
+    private void showProgressComment(final boolean show) {
+        comment_button.setVisibility(show ? View.GONE: View.VISIBLE);
+        pbButton.setVisibility(show ? View.VISIBLE: View.GONE);
+
+    }
+
+    public boolean ValidateForm(){
+
+        boolean cancel = false;
+
+        if (TextUtils.isEmpty(etComment.getText())  ) {
+            etComment.setError(getString(R.string.error_field_required));
+            etComment.findFocus();
+            cancel = true;
+        }
+
+
+        return cancel;
+    }
 
 }

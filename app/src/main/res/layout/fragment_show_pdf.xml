@@ -4,33 +4,19 @@
     android:layout_height="match_parent"
     tools:context="pe.assetec.edificia.fragment.ShowPDFFragment">
 
-    <!-- TODO: Update blank fragment layout -->
-    <!--<TextView-->
-        <!--android:layout_width="match_parent"-->
-        <!--android:layout_height="match_parent"-->
-        <!--android:text="@string/hello_blank_fragment" />-->
-
-    <!--<WebView-->
-        <!--android:id="@+id/wbShowPdf"-->
-        <!--android:layout_width="match_parent"-->
-        <!--android:layout_height="match_parent" />-->
-
 
     <ProgressBar
-        android:id="@+id/progress_pdf"
-        style="?android:attr/progressBarStyleLarge"
+        android:id="@+id/progressBarInvoice"
+        style="?android:attr/progressBarStyle"
         android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:layout_gravity="center"
-        android:layout_marginBottom="8dp"
-        android:visibility="gone" />
-
-
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"/>
 
 
     <com.github.barteksc.pdfviewer.PDFView
     android:id="@+id/pdfView"
     android:layout_width="match_parent"
     android:layout_height="match_parent"/>
+
 
 </FrameLayout>

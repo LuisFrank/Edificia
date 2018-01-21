@@ -113,39 +113,19 @@ public class ReceiptFragment extends Fragment {
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
                 Building building = (Building)adapterView.getItemAtPosition(position);
 
-               String auth_token =  session.getTOKEN();
-                //Instantiate new instance of our class
-                HttpGetRequest getRequest = new HttpGetRequest();
-                //Perform the doInBackground method, passing in our url
-                try {
-                    result = getRequest.execute(myUrl+ "/"+building.getBuilding_id()+"/departaments/"+ building.getDepartament_id()+"/invoices/",auth_token).get();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                } catch (ExecutionException e) {
-                    e.printStackTrace();
-                }
-
-                if (result != null ){
-                    Log.e("result",result);
                     Fragment mFrag = new InvoicesListFragment();
                     //set Fragmentclass Arguments
                     Bundle bundle=new Bundle();
-                    bundle.putString("invoices",result );
                     bundle.putString("building_id",building.getBuilding_id().toString());
                     bundle.putString("departament_id",building.getDepartament_id().toString());
                     mFrag.setArguments(bundle);
 
                     FragmentManager fragmentManager = getActivity().getFragmentManager();
                     fragmentManager.beginTransaction().replace(R.id.Contendor, mFrag).addToBackStack(null).commit();
-                }else{
-                    Toast.makeText(getActivity(), "Error al obtener datos", Toast.LENGTH_SHORT).show();
-                }
             }
         });
         // Inflate the layout for this fragment
         return view;
-
-
     }
 
     // TODO: Rename method, update argument and hook method into UI event
@@ -172,16 +152,6 @@ public class ReceiptFragment extends Fragment {
         mListener = null;
     }
 
-    /**
-     * This interface must be implemented by activities that contain this
-     * fragment to allow an interaction in this fragment to be communicated
-     * to the activity and potentially other fragments contained in that
-     * activity.
-     * <p>
-     * See the Android Training lesson <a href=
-     * "http://developer.android.com/training/basics/fragments/communicating.html"
-     * >Communicating with Other Fragments</a> for more information.
-     */
     public interface OnFragmentInteractionListener {
         // TODO: Update argument type and name
         void onFragmentInteraction(Uri uri);

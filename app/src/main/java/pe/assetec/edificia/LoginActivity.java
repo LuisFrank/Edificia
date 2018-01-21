@@ -64,8 +64,8 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
     public static final int CONNECTION_TIMEOUT=10000;
     public static final int READ_TIMEOUT=15000;
     private static final int REQUEST_READ_CONTACTS = 0;
-    public static final String URL_STRING = "http://edificia.pe/api/v1/new_sessions";
-//    public static final String URL_STRING = "http://localhost:3000/api/v1/new_sessions";
+//    public static final String URL_STRING = "http://edificia.pe/api/v1/new_sessions";
+    public static final String URL_STRING = "http://localhost:3000/api/v1/new_sessions";
 
     ManageSession session;
 

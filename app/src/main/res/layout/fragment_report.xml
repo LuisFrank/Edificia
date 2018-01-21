@@ -4,89 +4,104 @@
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
 xmlns:android="http://schemas.android.com/apk/res/android">
-<LinearLayout android:orientation="vertical"
-    android:padding="20.0dip"
-    android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
-    android:weightSum="1.0">
 
-    <ProgressBar android:id="@+id/login_progressReport"
-        android:visibility="gone"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="24.0dip"
-        android:layout_marginBottom="8.0dip"
-        android:layout_centerInParent="true"
-        style="?android:attr/progressBarStyleLarge" />
-
-    <LinearLayout android:orientation="vertical"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        xmlns:android="http://schemas.android.com/apk/res/android">
-        <TextView android:textSize="21.0sp"
-            android:id="@+id/tvBuildingsFR"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Edificio" />
-        <Spinner android:id="@+id/spnBuildingsFR"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:spinnerMode="dialog" />
-    </LinearLayout>
-    <LinearLayout android:orientation="vertical"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        xmlns:android="http://schemas.android.com/apk/res/android">
-
-        <TextView android:textSize="21.0sp"
-            android:id="@+id/tvPeriodsFR"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Periodo" />
-
-        <Spinner android:id="@+id/spnPeriodsFR"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content" />
-    </LinearLayout>
-
-    <LinearLayout android:orientation="vertical"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        xmlns:android="http://schemas.android.com/apk/res/android">
-
-        <TextView android:textSize="21.0sp"
-            android:id="@+id/tvPTipoInformeFR"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Tipo" />
-
-        <Spinner
-            android:id="@+id/spnTipoInformeFR"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content" />
-    </LinearLayout>
-
-    <LinearLayout android:orientation="vertical"
-        android:padding="18.0dip"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:layout_weight="0.05"
-        xmlns:android="http://schemas.android.com/apk/res/android">
-
-        <Button android:id="@+id/btnDescargarFR"
-            android:layout_width="fill_parent"
-            android:layout_height="fill_parent"
-            android:text="Descargar (PDF)" />
-    </LinearLayout>
-</LinearLayout>
-
-    <android.support.design.widget.FloatingActionButton
-        android:id="@+id/fabReport"
+    <ProgressBar
+        android:id="@+id/progressBarReport"
+        style="?android:attr/progressBarStyle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="end|bottom|center"
-        android:layout_margin="@dimen/fab_margin"
-        android:src="?android:actionModeFindDrawable"
-        app:backgroundTint="@color/colorPrimary" />
+        android:layout_gravity="center"/>
+
+    <LinearLayout android:orientation="vertical"
+        android:id="@+id/report_form"
+        android:padding="20.0dip"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:weightSum="1.0">
+
+        <LinearLayout android:orientation="vertical"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            xmlns:android="http://schemas.android.com/apk/res/android">
+            <TextView android:textSize="21.0sp"
+                android:id="@+id/tvBuildingsFR"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Edificio" />
+            <Spinner android:id="@+id/spnBuildingsFR"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:spinnerMode="dialog" />
+        </LinearLayout>
+
+        <ProgressBar
+            android:id="@+id/progressBarPeriod"
+            style="?android:attr/progressBarStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"/>
+
+        <LinearLayout android:orientation="vertical"
+            android:id="@+id/period_form"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            xmlns:android="http://schemas.android.com/apk/res/android">
+
+            <LinearLayout android:orientation="vertical"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                xmlns:android="http://schemas.android.com/apk/res/android">
+
+                <TextView android:textSize="21.0sp"
+                    android:id="@+id/tvPeriodsFR"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Periodo" />
+
+                <Spinner android:id="@+id/spnPeriodsFR"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content" />
+            </LinearLayout>
+            <LinearLayout android:orientation="vertical"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                xmlns:android="http://schemas.android.com/apk/res/android">
+
+                <TextView android:textSize="21.0sp"
+                    android:id="@+id/tvPTipoInformeFR"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Tipo" />
+
+                <Spinner
+                    android:id="@+id/spnTipoInformeFR"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content" />
+            </LinearLayout>
+            <LinearLayout android:orientation="vertical"
+                android:padding="18.0dip"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.05"
+                xmlns:android="http://schemas.android.com/apk/res/android">
+
+                <Button android:id="@+id/btnDescargarFR"
+                    android:layout_width="fill_parent"
+                    android:layout_height="fill_parent"
+                    android:text="Descargar (PDF)" />
+            </LinearLayout>
+
+            <android.support.design.widget.FloatingActionButton
+                android:id="@+id/fabReport"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="end|bottom|center"
+                android:layout_margin="@dimen/fab_margin"
+                android:src="?android:actionModeFindDrawable"
+                app:backgroundTint="@color/colorPrimary" />
+        </LinearLayout>
+    </LinearLayout>
+
+
 
 </FrameLayout>

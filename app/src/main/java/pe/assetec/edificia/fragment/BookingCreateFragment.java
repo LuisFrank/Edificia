@@ -5,13 +5,17 @@ import android.app.DatePickerDialog;
 import android.app.FragmentManager;
 import android.app.TimePickerDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.app.Fragment;
 import android.support.annotation.RequiresApi;
+import android.support.design.widget.TextInputLayout;
+import android.text.TextUtils;
 import android.util.Log;
+import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,7 +24,9 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.DatePicker;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
@@ -28,10 +34,12 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -43,8 +51,10 @@ import java.util.concurrent.ExecutionException;
 import pe.assetec.edificia.R;
 import pe.assetec.edificia.controller.CommonAreasController;
 import pe.assetec.edificia.controller.PeriodController;
+import pe.assetec.edificia.model.Block;
 import pe.assetec.edificia.model.CommonArea;
 import pe.assetec.edificia.model.Period;
+import pe.assetec.edificia.util.CustomTimePickDialog;
 import pe.assetec.edificia.util.HttpGetRequest;
 import pe.assetec.edificia.util.ManageSession;
 
@@ -59,8 +69,8 @@ import static android.app.AlertDialog.THEME_HOLO_LIGHT;
  */
 public class BookingCreateFragment extends Fragment {
 
-//    String myUrl = "http://localhost:3000/api/v1/buildings";
-        String myUrl = "http://edificia.pe/api/v1/buildings";
+    String myUrl = "http://localhost:3000/api/v1/buildings";
+//  String myUrl = "http://edificia.pe/api/v1/buildings";
     String result;
 
     public static final String REQUEST_METHOD = "GET";
@@ -74,20 +84,26 @@ public class BookingCreateFragment extends Fragment {
     ManageSession session;
 
     Button btnCreate;
-
+    ProgressBar pbBooking;
+    View bookingform;
     Spinner spnAreaCommon;
-    CheckBox chxTerms;
+
+    TextView tvTerminos;
+    TextView tvDetalles;
+
     EditText etTitle;
+    CheckBox chxTerms;
     EditText etInitialDate;
     EditText etInitialTime;
     EditText etFinalDate;
     EditText etFinalTime;
-    DatePickerDialog datePickerDialog;
-    TimePickerDialog timePickerDialog;
-    DatePickerDialog datePickerDialogF;
-    TimePickerDialog timePickerDialogF;
 
-    List<CommonArea> datosCommonAreas;
+    TextInputLayout tilTitle,tilTerms,tilInitialDate,tilInitialTime,tilFinalDate, tilFinalTime;
+    DatePickerDialog datePickerDialog;
+    DatePickerDialog datePickerDialogF;
+    CustomTimePickDialog customTimePickerDialog, customTimePickerDialogF;
+
+    public  List<CommonArea> datosCommonAreas;
 
     private OnFragmentInteractionListener mListener;
 
@@ -95,20 +111,30 @@ public class BookingCreateFragment extends Fragment {
         // Required empty public constructor
     }
 
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setRetainInstance(true);
+        if (getArguments() != null) {
+
+        }
+    }
+
+
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
+
         View view = inflater.inflate(R.layout.fragment_booking_create, container, false);
 
         session = new ManageSession(getActivity());
-        // Inflate the layout for this fragment
-
-        String ticketsText=getArguments().getString("bookings");
         building_id = getArguments().getInt("building_id");
         departament_id = getArguments().getInt("departament_id");
-
+        pbBooking = (ProgressBar) view.findViewById(R.id.progressBarBooking);
+        bookingform = view.findViewById(R.id.booking_form);
         spnAreaCommon  = (Spinner) view.findViewById(R.id.spnBookingAreaCommon);
         etTitle  = (EditText) view.findViewById(R.id.etBookingName);
         etInitialDate  = (EditText) view.findViewById(R.id.etBookingInitialDate);
@@ -116,48 +142,32 @@ public class BookingCreateFragment extends Fragment {
         etFinalDate  = (EditText) view.findViewById(R.id.etBookingFinalDate);
         etFinalTime  = (EditText) view.findViewById(R.id.etBookingFinalTime);
         chxTerms =  (CheckBox) view.findViewById(R.id.chxBookingTerms);
+        tvTerminos = (TextView) view.findViewById(R.id.tvTerminos);
+        tvDetalles =  (TextView) view.findViewById(R.id.tvDetalles);
         btnCreate = (Button) view.findViewById(R.id.btnBooking);
 
+
+        tilTitle =  (TextInputLayout) view.findViewById(R.id.tilBookingName);
+        tilTerms =  (TextInputLayout) view.findViewById(R.id.tilBookingTerms);
+        tilInitialDate =  (TextInputLayout) view.findViewById(R.id.tilBookingInitialDate);
+        tilInitialTime =  (TextInputLayout) view.findViewById(R.id.tilBookingInitialTime);
+        tilFinalDate =  (TextInputLayout) view.findViewById(R.id.tilBookingFinalDate);
+        tilFinalTime =  (TextInputLayout) view.findViewById(R.id.tilBookingFinalTime);
+
+
         //Obtener Areas comunes
-        List<CommonArea> datosCommonAreas;
+        showProgress(true);
 
 
         String urlReserva = myUrl + "/" + building_id + "/" + "common_areas";
-
         AreaCommonListTask areaTask = new AreaCommonListTask(session.getTOKEN(),urlReserva);
         areaTask.execute();
 
         InitialDateTimes();
-
-
-        btnCreate.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                String finalUrl =  myUrl+ "/"+building_id+"/departaments/"+ departament_id+"/bookings/";
-                CommonArea area_common = (CommonArea) spnAreaCommon.getSelectedItem();
-                String common_area_id =  area_common.getId().toString();
-                String name = etTitle.getText().toString();
-                String initial_date = etInitialDate.getText().toString();
-                String initial_time  = etInitialTime.getText().toString();
-                String final_date  = etFinalDate.getText().toString();
-                String final_time  = etFinalTime.getText().toString();
-                String terms_of_service = "";
-                if (chxTerms.isChecked()){
-                     terms_of_service = "1";
-                }else
-                {
-                     terms_of_service = "0";
-                }
-
-
-
-                BookingPostTask bookinsTaks = new BookingPostTask(finalUrl,session.getTOKEN(),common_area_id,name,initial_date,initial_time,final_date,final_time,terms_of_service);
-                bookinsTaks.execute();
-            }
-        });
+        InitialDetails();
+        InitialButton();
 
         return view;
-
     }
 
     // TODO: Rename method, update argument and hook method into UI event
@@ -213,18 +223,19 @@ public class BookingCreateFragment extends Fragment {
                 int mMonth = c.get(Calendar.MONTH); // current month
                 int mDay = c.get(Calendar.DAY_OF_MONTH); // current day
                 // date picker dialog
-                datePickerDialog = new DatePickerDialog(getActivity(),
-                        new DatePickerDialog.OnDateSetListener() {
 
-                            @Override
-                            public void onDateSet(DatePicker view, int year,
-                                                  int monthOfYear, int dayOfMonth) {
-                                // set day of month , month and year value in the edit text
-                                etInitialDate.setText(dayOfMonth + "/"
-                                        + (monthOfYear + 1) + "/" + year);
+                datePickerDialog = new DatePickerDialog(getActivity(), new DatePickerDialog.OnDateSetListener() {
 
-                            }
-                        }, mYear, mMonth, mDay);
+
+                    @Override
+                    public void onDateSet(DatePicker view, int year,
+                                          int monthOfYear, int dayOfMonth) {
+                        // set day of month , month and year value in the edit text
+                        etInitialDate.setText(dayOfMonth + "/"
+                                + String.format("%02d", (monthOfYear + 1)) + "/" + year);
+
+                    }
+                } , mYear, mMonth, mDay);
 
                 datePickerDialog.show();
             }
@@ -238,15 +249,13 @@ public class BookingCreateFragment extends Fragment {
                 int hour = mcurrentTime.get(Calendar.HOUR_OF_DAY);
                 int minute = mcurrentTime.get(Calendar.MINUTE);
 
-
-                timePickerDialog = new TimePickerDialog(getActivity(), THEME_HOLO_LIGHT, new TimePickerDialog.OnTimeSetListener() {
+                customTimePickerDialog = new CustomTimePickDialog(getActivity(), THEME_HOLO_LIGHT, new CustomTimePickDialog.OnTimeSetListener() {
                     @Override
                     public void onTimeSet(TimePicker timePicker, int selectedHour, int selectedMinute) {
-                        etInitialTime.setText( selectedHour + ":" + selectedMinute);
+                        etInitialTime.setText( selectedHour + ":" + String.format("%02d",selectedMinute));
                     }
-                }, hour, minute, true);
-
-                timePickerDialog.show();
+                }, hour, minute,15, true);
+                customTimePickerDialog.show();
             }
         });
 
@@ -259,7 +268,7 @@ public class BookingCreateFragment extends Fragment {
                 int mMonth = c.get(Calendar.MONTH); // current month
                 int mDay = c.get(Calendar.DAY_OF_MONTH); // current day
                 // date picker dialog
-                datePickerDialogF = new DatePickerDialog(getActivity(),
+                datePickerDialogF = new DatePickerDialog(getActivity(),R.style.DatePicker,
                         new DatePickerDialog.OnDateSetListener() {
 
                             @Override
@@ -267,7 +276,7 @@ public class BookingCreateFragment extends Fragment {
                                                   int monthOfYear, int dayOfMonth) {
                                 // set day of month , month and year value in the edit text
                                 etFinalDate.setText(dayOfMonth + "/"
-                                        + (monthOfYear + 1) + "/" + year);
+                                        + String.format("%02d",(monthOfYear + 1)) + "/" + year);
 
                             }
                         }, mYear, mMonth, mDay);
@@ -284,15 +293,117 @@ public class BookingCreateFragment extends Fragment {
                 int minute = mcurrentTime.get(Calendar.MINUTE);
 
 
-                timePickerDialogF = new TimePickerDialog(getActivity(), THEME_HOLO_LIGHT ,new TimePickerDialog.OnTimeSetListener() {
+                customTimePickerDialogF = new CustomTimePickDialog(getActivity(), THEME_HOLO_LIGHT ,new TimePickerDialog.OnTimeSetListener() {
                     @Override
                     public void onTimeSet(TimePicker timePicker, int selectedHour, int selectedMinute) {
-                        etFinalTime.setText( selectedHour + ":" + selectedMinute);
+                        etFinalTime.setText( selectedHour + ":" + String.format("%02d",selectedMinute));
                     }
-                }, hour, minute, true);
-                timePickerDialogF.show();
+                }, hour, minute,15, true);
+                customTimePickerDialogF.show();
             }
         });
+
+    }
+
+    public void InitialDetails(){
+        tvTerminos.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                AlertDialog.Builder builder1 = new AlertDialog.Builder(getActivity());
+                builder1.setTitle("Reglamento");
+                CommonArea area_common = (CommonArea) spnAreaCommon.getSelectedItem();
+                builder1.setMessage(area_common.getRegulation());
+                builder1.setCancelable(true);
+                builder1.setNegativeButton(
+                        "Cerrar",
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                dialog.cancel();
+                            }
+                        });
+
+                AlertDialog alert11 = builder1.create();
+                alert11.show();
+            }
+        });
+
+
+        tvDetalles.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                AlertDialog.Builder builderDetail = new AlertDialog.Builder(
+                        new ContextThemeWrapper(getActivity(), android.R.style.Theme_Holo_Light));
+
+
+                CommonArea area_common = (CommonArea) spnAreaCommon.getSelectedItem();
+
+                builderDetail.setTitle(area_common.getName());
+//                builder1.setMessage(area_common.getDescription());
+
+                StringBuilder horarios = new StringBuilder();
+                horarios.append("Descripción:");
+                horarios.append("\n");
+                horarios.append(area_common.getDescription());
+                horarios.append("\n");
+                horarios.append("\n");
+                horarios.append("Horarios de Reserva:");
+                horarios.append("\n");
+                for(Block block : area_common.getBloks()) {
+                    horarios.append("*");
+                    horarios.append(block.Horarios());
+                    horarios.append("\n");
+                }
+                builderDetail.setMessage(horarios.toString());
+                builderDetail.setCancelable(true);
+                builderDetail.setNegativeButton(
+                        "Cerrar",
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                dialog.cancel();
+                            }
+                        });
+
+                AlertDialog alert22 = builderDetail.create();
+                alert22.show();
+            }
+        });
+    }
+
+    public void InitialButton(){
+
+
+        btnCreate.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                boolean cancel = ValidateForm();
+
+                if (cancel) {
+
+                }
+                else {
+                    showProgress(true);
+                    String finalUrl = myUrl + "/" + building_id + "/departaments/" + departament_id + "/bookings/";
+                    CommonArea area_common = (CommonArea) spnAreaCommon.getSelectedItem();
+                    String common_area_id = area_common.getId().toString();
+                    String name = etTitle.getText().toString();
+                    String initial_date = etInitialDate.getText().toString();
+                    String initial_time = etInitialTime.getText().toString();
+                    String final_date = etFinalDate.getText().toString();
+                    String final_time = etFinalTime.getText().toString();
+                    String terms_of_service = "";
+                    if (chxTerms.isChecked()) {
+                        terms_of_service = "1";
+                    } else {
+                        terms_of_service = "0";
+                    }
+
+                    BookingPostTask bookinsTaks = new BookingPostTask(finalUrl, session.getTOKEN(), common_area_id, name, initial_date, initial_time, final_date, final_time, terms_of_service);
+                    bookinsTaks.execute();
+                }
+            }
+        });
+
 
     }
 
@@ -357,9 +468,6 @@ public class BookingCreateFragment extends Fragment {
                 // setDoInput and setDoOutput method depict handling of both send and receive
 
                 // Append parameters to URL
-                DataOutputStream out = new DataOutputStream(conn.getOutputStream());
-
-
                 JSONObject jsonobj = new JSONObject();
                 jsonobj.put("common_area_id", common_area_id);
                 jsonobj.put("name", name);
@@ -369,10 +477,10 @@ public class BookingCreateFragment extends Fragment {
                 jsonobj.put("final_time", final_time);
                 jsonobj.put("terms_of_service", terms_of_service);
 
-
-                out.writeBytes(jsonobj.toString());
-                out.flush();
-                out.close();
+                BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(conn.getOutputStream(), "UTF-8"));
+                bw.write(jsonobj.toString());
+                bw.flush();
+                bw.close();
                 conn.connect();
                 Log.e("url", url.toString());
 
@@ -427,7 +535,7 @@ public class BookingCreateFragment extends Fragment {
 
         @Override
         protected void onPostExecute(String success) {
-
+            showProgress(false);
 //            mProgressBar.setVisibility(View.GONE);
             Log.e("succes",success);
             JSONObject jsonObject = null;
@@ -466,6 +574,7 @@ public class BookingCreateFragment extends Fragment {
 
         @Override
         protected void onCancelled() {
+            showProgress(false);
 //            mProgressBar.setVisibility(View.GONE);
         }
     }
@@ -547,7 +656,7 @@ public class BookingCreateFragment extends Fragment {
 
         @Override
         protected void onPostExecute(String success) {
-
+            showProgress(false);
             ArrayAdapter<CommonArea> adapter;
             adapter = new ArrayAdapter<CommonArea> (getActivity(),android.R.layout.select_dialog_item,datosCommonAreas);
             spnAreaCommon.setAdapter(adapter);
@@ -557,9 +666,78 @@ public class BookingCreateFragment extends Fragment {
 
         @Override
         protected void onCancelled() {
+            showProgress(false);
 //            mProgressBar.setVisibility(View.GONE);
 //            mAuthTask = null;
 //            showProgress(false);
         }
+
+
+
     }
+
+    private void showProgress(final boolean show) {
+        bookingform.setVisibility(show ? View.GONE: View.VISIBLE);
+        pbBooking.setVisibility(show ? View.VISIBLE: View.GONE);
+
+    }
+
+
+    public boolean ValidateForm(){
+
+        boolean cancel = false;
+
+        if (TextUtils.isEmpty(etTitle.getText())  ) {
+
+            tilTitle.setError(getString(R.string.error_field_required));
+            cancel = true;
+        }else{
+            tilTitle.setErrorEnabled(false);
+        }
+
+        if (TextUtils.isEmpty(etInitialDate.getText())  ) {
+            tilInitialDate.setError(getString(R.string.error_field_required));
+            cancel = true;
+        }else{
+            tilInitialDate.setErrorEnabled(false);
+        }
+
+        if (TextUtils.isEmpty(etInitialTime.getText())  ) {
+            tilInitialTime.setError(getString(R.string.error_field_required));
+            cancel = true;
+        }else{
+            tilInitialTime.setErrorEnabled(false);
+        }
+
+        if (TextUtils.isEmpty(etFinalDate.getText())  ) {
+            tilFinalDate.setError(getString(R.string.error_field_required));
+            cancel = true;
+        }else{
+            tilFinalDate.setErrorEnabled(false);
+        }
+
+        if (TextUtils.isEmpty(etFinalTime.getText())  ) {
+            tilFinalTime.setError(getString(R.string.error_field_required));
+            cancel = true;
+        }else{
+            tilFinalTime.setErrorEnabled(false);
+        }
+
+        if (!(chxTerms.isChecked())  ) {
+            tilTerms.setError(getString(R.string.error_field_required));
+            cancel = true;
+        }else{
+            tilTerms.setErrorEnabled(false);
+        }
+
+
+
+        return cancel;
+    }
+
+
+
+
+
+
 }

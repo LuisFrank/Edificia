@@ -6,6 +6,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.app.Fragment;
 import android.app.FragmentManager;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -20,16 +21,20 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
+import pe.assetec.edificia.LoginActivity;
 import pe.assetec.edificia.R;
 import pe.assetec.edificia.model.Comment;
 import pe.assetec.edificia.util.ManageSession;
@@ -46,9 +51,9 @@ public class TicketFormFragment extends Fragment {
 
 
     //   RUTAS
-   String myUrl = "http://edificia.pe/api/v1/buildings";
+//   String myUrl = "http://edificia.pe/api/v1/buildings";
     //Localhost
-//    String myUrl = "http://localhost:3000/api/v1/buildings";
+    String myUrl = "http://localhost:3000/api/v1/buildings";
     //String to place our result in
     String result;
     ManageSession session;
@@ -56,12 +61,15 @@ public class TicketFormFragment extends Fragment {
     Button buttonTicket;
     EditText etSummary;
     EditText etDescription;
-     ProgressBar mProgressBar;
+    ProgressBar pbTicketForm;
+    View tickeForm;
 
     public static final String REQUEST_METHOD = "GET";
     public static final int CONNECTION_TIMEOUT=10000;
     public static final int READ_TIMEOUT=15000;
     private static final int REQUEST_READ_CONTACTS = 0;
+
+
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
@@ -115,6 +123,8 @@ public class TicketFormFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_ticket_form, container, false);
 
         session = new ManageSession(getActivity());
+        pbTicketForm = (ProgressBar) view.findViewById(R.id.progressBarTicketForm);
+        tickeForm =  view.findViewById(R.id.ticket_form);
         buttonTicket = (Button) view.findViewById(R.id.btnTicket);
         etSummary= (EditText)view.findViewById(R.id.txtTicketSummary);
         etDescription= (EditText)view.findViewById(R.id.txtTicketDescription);
@@ -133,9 +143,15 @@ public class TicketFormFragment extends Fragment {
         buttonTicket.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                boolean cancel = ValidateForm();
 
-                TicketPostTask task = new TicketPostTask(auth_token,finalUrl, etSummary.getText().toString(),etDescription.getText().toString());
-                task.execute();
+                if (cancel) {
+
+                } else {
+                    TicketPostTask task = new TicketPostTask(auth_token,finalUrl, etSummary.getText().toString(),etDescription.getText().toString());
+                    task.execute();
+                }
+
             }
         });
 
@@ -202,6 +218,7 @@ public class TicketFormFragment extends Fragment {
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
+            showProgress(true);
 //            mProgressBar.setVisibility(View.VISIBLE);
         }
 
@@ -228,7 +245,7 @@ public class TicketFormFragment extends Fragment {
                 conn = (HttpURLConnection)url.openConnection();
                 conn.setReadTimeout(READ_TIMEOUT);
                 conn.setConnectTimeout(CONNECTION_TIMEOUT);
-                conn.setRequestProperty("Content-Type", "application/json");
+                conn.setRequestProperty("Content-Type", "application/json; charset=utf-8");
                 conn.setRequestProperty("Accept", "application/json");
                 String token = " " +new String(mtoken);
                 conn.addRequestProperty ("Authorization", token);
@@ -240,17 +257,18 @@ public class TicketFormFragment extends Fragment {
                 // setDoInput and setDoOutput method depict handling of both send and receive
 
                 // Append parameters to URL
-                DataOutputStream out = new DataOutputStream(conn.getOutputStream());
+//                DataOutputStream out = new DataOutputStream(conn.getOutputStream());
 
 
                 JSONObject jsonobj = new JSONObject();
                 jsonobj.put("summary", msummary);
                 jsonobj.put("description", mdescription);
 
+                BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(conn.getOutputStream(), "UTF-8"));
+                bw.write(jsonobj.toString());
+                bw.flush();
+                bw.close();
 
-                out.writeBytes(jsonobj.toString());
-                out.flush();
-                out.close();
                 conn.connect();
                 Log.e("url", url.toString());
                 Log.e("token",token);
@@ -307,7 +325,7 @@ public class TicketFormFragment extends Fragment {
         @Override
         protected void onPostExecute(String success) {
 
-//            mProgressBar.setVisibility(View.GONE);
+            showProgress(false);
             Log.e("succes",success);
             JSONObject jsonObject = null;
             try {
@@ -331,13 +349,14 @@ public class TicketFormFragment extends Fragment {
 //                        FragmentTransaction ftr = getFragmentManager().beginTransaction();
 //                        ftr.detach(frg).attach(frg).commit();
                     }else{
-                        Toast.makeText(getActivity(),"No se pudo enviar ",Toast.LENGTH_LONG).show();
+                        Toast.makeText(getActivity(),"No se pudo enviar :    \n " +  jsonObject.getString("errors").replace(",","\n"),Toast.LENGTH_LONG).show();
                     }
 
                     //it's not contain key club or isnull so do this operation here
                 }
             } catch (JSONException e) {
                 e.printStackTrace();
+                Toast.makeText(getActivity(),"Ha ocurrido un error en el servidor ",Toast.LENGTH_LONG).show();
             }
         }
 
@@ -345,5 +364,30 @@ public class TicketFormFragment extends Fragment {
         protected void onCancelled() {
 //            mProgressBar.setVisibility(View.GONE);
         }
+    }
+
+    private void showProgress(final boolean show) {
+        tickeForm.setVisibility(show ? View.GONE: View.VISIBLE);
+        pbTicketForm.setVisibility(show ? View.VISIBLE: View.GONE);
+
+    }
+
+
+    public boolean ValidateForm(){
+
+        boolean cancel = false;
+
+        if (TextUtils.isEmpty(etSummary.getText())  ) {
+            etSummary.setError(getString(R.string.error_field_required));
+
+            cancel = true;
+        }
+        if (TextUtils.isEmpty(etDescription.getText())  ) {
+            etDescription.setError(getString(R.string.error_field_required));
+
+            cancel = true;
+        }
+
+        return cancel;
     }
 }

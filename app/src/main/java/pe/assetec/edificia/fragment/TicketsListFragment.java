@@ -14,6 +14,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import org.json.JSONException;
@@ -51,9 +52,9 @@ import pe.assetec.edificia.util.ManageSession;
 public class TicketsListFragment extends Fragment {
 
     //   RUTAS
-    String myUrl = "http://edificia.pe/api/v1/buildings";
+//    String myUrl = "http://edificia.pe/api/v1/buildings";
     //Localhost
-//    String myUrl = "http://localhost:3000/api/v1/buildings";
+    String myUrl = "http://localhost:3000/api/v1/buildings";
     //String to place our result in
     String result;
     ManageSession session;
@@ -62,6 +63,8 @@ public class TicketsListFragment extends Fragment {
     Integer building_id  = 0;
     Integer departament_id = 0;
 
+    ProgressBar pbTicketList;
+    View ticketList;
     List<Ticket> datos;
     ListView listview ;
     TicketsListAdapter listAdapter;
@@ -111,19 +114,18 @@ public class TicketsListFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_tickets_list, container, false);
+        pbTicketList = (ProgressBar) view.findViewById(R.id.progressBarTicketList);
+        ticketList = view.findViewById(R.id.ticket_list);
         listview = (ListView) view.findViewById(R.id.lvFragmentTicketsList);
         fab = (FloatingActionButton) view.findViewById(R.id.fabTicket);
 
-
         session = new ManageSession(getActivity());
         // Inflate the layout for this fragment
-
         String ticketsText=getArguments().getString("tickets");
         building_id = getArguments().getInt("building_id");
         departament_id = getArguments().getInt("departament_id");
-
         String finalUrl = myUrl+ "/"+building_id+"/departaments/"+ departament_id+"/tickets/";
-
+        showProgress(true);
         TicketListTask taskTicket = new TicketListTask(session.getTOKEN(),finalUrl);
         taskTicket.execute();
 
@@ -248,6 +250,7 @@ public class TicketsListFragment extends Fragment {
 
         @Override
         protected void onPostExecute(String success) {
+            showProgress(false);
             listAdapter = new TicketsListAdapter(getActivity(),R.layout.row_layout_ticket,datos);
             listview.setAdapter(listAdapter);
             listAdapter.notifyDataSetChanged();
@@ -297,9 +300,14 @@ public class TicketsListFragment extends Fragment {
 
         @Override
         protected void onCancelled() {
-//            mProgressBar.setVisibility(View.GONE);
-//            mAuthTask = null;
-//            showProgress(false);
+            showProgress(false);
         }
+    }
+
+
+    private void showProgress(final boolean show) {
+        ticketList.setVisibility(show ? View.GONE: View.VISIBLE);
+        pbTicketList.setVisibility(show ? View.VISIBLE: View.GONE);
+
     }
 }

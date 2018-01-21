@@ -5,31 +5,35 @@
     tools:context="pe.assetec.edificia.fragment.InvoicesListFragment">
 
     <!-- TODO: Update blank fragment layout -->
-    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical"
-        >
-
-    <!-- TODO: Update blank fragment layout -->
-    <!--  First header line -->
-    <TextView
-        android:id="@+id/header_line1"
+    <ProgressBar
+        android:id="@+id/progressBarInvoiceList"
+        style="?android:attr/progressBarStyle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center_vertical|center"
-        android:padding="10dp"
-        android:paddingLeft="18dp"
-        android:text="Recibos"
-        android:textColor="#8e8888"
-        android:textSize="24sp" />
-    <!-- Third header line and column headings -->
+        android:layout_gravity="center"/>
 
-
-    <ListView
-        android:id="@+id/lvFragmentInvoicesList"
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/invoice_list"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/header_line1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical|center"
+            android:padding="10dp"
+            android:paddingLeft="18dp"
+            android:text="Recibos"
+            android:textColor="#8e8888"
+            android:textSize="24sp" />
+        <!-- Third header line and column headings -->
+
+        <ListView
+            android:id="@+id/lvFragmentInvoicesList"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
     </LinearLayout>
 
 </FrameLayout>

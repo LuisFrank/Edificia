@@ -9,8 +9,12 @@
     </style>
 
     <style name="DatePicker" parent="@android:style/Theme.Holo.Light">
-        <item name="android:datePickerStyle">@android:style/Widget.DatePicker</item>
+        <item name="android:divider">@color/colorPrimary</item>
+        <item name="colorAccent">@color/colorPrimary</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:layout_gravity">center</item>
     </style>
+
 
     <style name="AppTheme.NoActionBar">
         <item name="windowActionBar">false</item>

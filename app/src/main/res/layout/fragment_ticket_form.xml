@@ -5,7 +5,16 @@
     tools:context="pe.assetec.edificia.fragment.TicketFormFragment">
 
 
+    <ProgressBar
+        android:id="@+id/progressBarTicketForm"
+        style="?android:attr/progressBarStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:visibility="gone"/>
+
     <LinearLayout
+        android:id="@+id/ticket_form"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
@@ -20,14 +29,9 @@
             android:text="NUEVO TICKET"
             android:textSize="25sp" />
 
-
-        <TextView
+        <android.support.design.widget.TextInputLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="left|center_vertical"
-            android:text="Asunto"
-            android:textSize="18sp"
-            android:textStyle="bold" />
+            android:layout_height="wrap_content" >
 
             <EditText
                 android:id="@+id/txtTicketSummary"
@@ -35,21 +39,22 @@
                 android:layout_height="wrap_content"
                 android:ems="10"
                 android:inputType="textPersonName"
-                android:text="" />
+                android:text=""
+                android:hint="Asunto"/>
+        </android.support.design.widget.TextInputLayout>
 
-        <TextView
+        <android.support.design.widget.TextInputLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Comentario"
-            android:textSize="18sp"
-            android:textStyle="bold" />
+            android:layout_height="wrap_content" >
 
             <EditText
                 android:id="@+id/txtTicketDescription"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:ems="10"
+                android:hint="Comentario"
                 android:inputType="textMultiLine" />
+        </android.support.design.widget.TextInputLayout>
 
         <Button
             android:id="@+id/btnTicket"

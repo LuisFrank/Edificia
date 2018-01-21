@@ -36,8 +36,8 @@ import pe.assetec.edificia.util.ManageSession;
  */
 public class BookingFragment extends Fragment {
 
-//  String myUrl = "http://localhost:3000/api/v1/buildings";
-    String myUrl = "http://edificia.pe/api/v1/buildings";
+  String myUrl = "http://localhost:3000/api/v1/buildings";
+//String myUrl = "http://edificia.pe/api/v1/buildings";
     String result;
 
     List<Building> departaments;

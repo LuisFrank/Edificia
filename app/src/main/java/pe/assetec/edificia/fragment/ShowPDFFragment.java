@@ -1,11 +1,7 @@
 package pe.assetec.edificia.fragment;
 
 import android.Manifest;
-import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
-import android.annotation.TargetApi;
 import android.app.Activity;
-import android.app.DownloadManager;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.net.Uri;
@@ -14,19 +10,11 @@ import android.os.Build;
 import android.os.Bundle;
 import android.app.Fragment;
 import android.os.Environment;
-import android.support.annotation.RequiresApi;
 import android.support.v4.app.ActivityCompat;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.webkit.WebChromeClient;
-import android.webkit.WebResourceError;
-import android.webkit.WebResourceRequest;
-import android.webkit.WebResourceResponse;
-import android.webkit.WebSettings;
-import android.webkit.WebView;
-import android.webkit.WebViewClient;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
@@ -40,13 +28,18 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.HashMap;
-import java.util.Map;
 
 import pe.assetec.edificia.R;
 import pe.assetec.edificia.util.ManageSession;
 
-
+/**
+ * A simple {@link Fragment} subclass.
+ * Activities that contain this fragment must implement the
+ * {@link ShowPDFFragment.OnFragmentInteractionListener} interface
+ * to handle interaction events.
+ * Use the {@link ShowPDFFragment#newInstance} factory method to
+ * create an instance of this fragment.
+ */
 public class ShowPDFFragment extends Fragment {
 
     // Storage Permissions variables
@@ -56,16 +49,21 @@ public class ShowPDFFragment extends Fragment {
             Manifest.permission.WRITE_EXTERNAL_STORAGE
     };
 
-//    String myUrl = "http://localhost:3000/api/v1/buildings";
-    String myUrl = "http://edificia.pe/api/v1/buildings";
+    String myUrl = "http://localhost:3000/api/v1/buildings";
+//    String myUrl = "http://edificia.pe/api/v1/buildings";
 
-    WebView wv;
     PDFView pdfv;
     ManageSession session;
+    ProgressBar pbInvoice;
 
+    // TODO: Rename parameter arguments, choose names that match
+    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
+    private static final String ARG_PARAM1 = "param1";
+    private static final String ARG_PARAM2 = "param2";
 
-    // Progress dialog
-    private View pDialog;
+    // TODO: Rename and change types of parameters
+    private String mParam1;
+    private String mParam2;
 
     private OnFragmentInteractionListener mListener;
 
@@ -74,38 +72,46 @@ public class ShowPDFFragment extends Fragment {
     }
 
 
+    // TODO: Rename and change types and number of parameters
+    public static ShowPDFFragment newInstance(String param1, String param2) {
+        ShowPDFFragment fragment = new ShowPDFFragment();
+        Bundle args = new Bundle();
+        args.putString(ARG_PARAM1, param1);
+        args.putString(ARG_PARAM2, param2);
+        fragment.setArguments(args);
+        return fragment;
+    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        verifyStoragePermissions(getActivity());
-
-
+        if (getArguments() != null) {
+            mParam1 = getArguments().getString(ARG_PARAM1);
+            mParam2 = getArguments().getString(ARG_PARAM2);
+        }
 
     }
-
-
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
 
-        session = new ManageSession(getActivity());
         View v= inflater.inflate(R.layout.fragment_show_pdf, container, false);
+
+        verifyStoragePermissions(getActivity());
+        session = new ManageSession(getActivity());
+
         pdfv = (PDFView) v.findViewById(R.id.pdfView);
-        pDialog = (ProgressBar) v.findViewById(R.id.progress_pdf);
+        pbInvoice = (ProgressBar) v.findViewById(R.id.progressBarInvoice);
+
+
          Integer invoice_id =   getArguments().getInt("invoice_id");
          Integer building_id =   getArguments().getInt("building_id");
          Integer departament_id = getArguments().getInt("departament_id");
 
-//        String myUrl= "https://graduateland.com/api/v2/users/jesper/cv?_locale=es";
-
-
-
+        showProgress(true);
         String newUrl = myUrl + "/"+building_id + "/departaments/"+ departament_id + "/invoices/" + invoice_id +"/print.pdf";
         final String token = session.getTOKEN();
-//        final String newtoken = " " +new String(token);
 
         DownloadFile DF = new DownloadFile();
         DF.execute(newUrl,token);
@@ -138,6 +144,7 @@ public class ShowPDFFragment extends Fragment {
         mListener = null;
     }
 
+
     /**
      * This interface must be implemented by activities that contain this
      * fragment to allow an interaction in this fragment to be communicated
@@ -161,7 +168,6 @@ public class ShowPDFFragment extends Fragment {
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            pDialog.setVisibility(View.VISIBLE);
         }
 
         @Override
@@ -256,7 +262,7 @@ public class ShowPDFFragment extends Fragment {
 
             @Override
         protected void onPostExecute(String result) {
-                pDialog.setVisibility(View.GONE);
+                showProgress(false);
                 if (result.equalsIgnoreCase("success")){
 
                     Toast.makeText(getActivity(), fileName, Toast.LENGTH_SHORT).show();
@@ -300,6 +306,12 @@ public class ShowPDFFragment extends Fragment {
                     REQUEST_EXTERNAL_STORAGE
             );
         }
+    }
+
+    private void showProgress(final boolean show) {
+        pdfv.setVisibility(show ? View.GONE: View.VISIBLE);
+        pbInvoice.setVisibility(show ? View.VISIBLE: View.GONE);
+
     }
 
 
