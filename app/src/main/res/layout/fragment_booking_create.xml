@@ -145,8 +145,8 @@
                             android:inputType="date"
                             android:textAppearance="@style/TextAppearance.AppCompat.Medium"
                             android:textColor="@android:color/black"
-                            android:textSize="20sp"
-                            android:theme="@style/DatePicker" />
+                            android:textSize="20sp" />
+
                 </android.support.design.widget.TextInputLayout>
 
                 <android.support.design.widget.TextInputLayout

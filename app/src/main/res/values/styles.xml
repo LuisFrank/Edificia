@@ -8,9 +8,16 @@
         <item name="colorAccent">@color/colorAccent</item>
     </style>
 
-    <style name="DatePicker" parent="@android:style/Theme.Holo.Light">
+    <style name="AppThemePicker" parent="android:Theme.Holo.Light.Dialog">
+        <!-- Customize your theme here. -->
+        <item name="colorControlNormal">@color/colorAccent</item>
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+    </style>
+
+    <style name="TimePicker" parent="AppThemePicker">
         <item name="android:divider">@color/colorPrimary</item>
-        <item name="colorAccent">@color/colorPrimary</item>
         <item name="android:windowBackground">@android:color/transparent</item>
         <item name="android:layout_gravity">center</item>
     </style>

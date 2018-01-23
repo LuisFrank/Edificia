@@ -252,7 +252,7 @@ public class BookingCreateFragment extends Fragment {
                 int hour = mcurrentTime.get(Calendar.HOUR_OF_DAY);
                 int minute = mcurrentTime.get(Calendar.MINUTE);
 
-                customTimePickerDialog = new CustomTimePickDialog(getActivity(), THEME_HOLO_LIGHT, new CustomTimePickDialog.OnTimeSetListener() {
+                customTimePickerDialog = new CustomTimePickDialog(getActivity(), R.style.TimePicker, new CustomTimePickDialog.OnTimeSetListener() {
                     @Override
                     public void onTimeSet(TimePicker timePicker, int selectedHour, int selectedMinute) {
                         etInitialTime.setText( selectedHour + ":" + String.format("%02d",selectedMinute));
@@ -271,7 +271,7 @@ public class BookingCreateFragment extends Fragment {
                 int mMonth = c.get(Calendar.MONTH); // current month
                 int mDay = c.get(Calendar.DAY_OF_MONTH); // current day
                 // date picker dialog
-                datePickerDialogF = new DatePickerDialog(getActivity(),R.style.DatePicker,
+                datePickerDialogF = new DatePickerDialog(getActivity(),
                         new DatePickerDialog.OnDateSetListener() {
 
                             @Override
@@ -296,7 +296,7 @@ public class BookingCreateFragment extends Fragment {
                 int minute = mcurrentTime.get(Calendar.MINUTE);
 
 
-                customTimePickerDialogF = new CustomTimePickDialog(getActivity(), THEME_HOLO_LIGHT ,new TimePickerDialog.OnTimeSetListener() {
+                customTimePickerDialogF = new CustomTimePickDialog(getActivity(),R.style.TimePicker ,new TimePickerDialog.OnTimeSetListener() {
                     @Override
                     public void onTimeSet(TimePicker timePicker, int selectedHour, int selectedMinute) {
                         etFinalTime.setText( selectedHour + ":" + String.format("%02d",selectedMinute));
