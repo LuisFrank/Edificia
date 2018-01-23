@@ -6,6 +6,8 @@ import android.content.SharedPreferences;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.util.Date;
+
 /**
  * Created by frank on 12/09/17.
  */
@@ -28,6 +30,7 @@ public class ManageSession {
     private String BUILDINGS="buildings";
 
     private String USERTYPE="usertype";
+
     // Shared Preferences variable
     SharedPreferences spSession;
     //editor for shared preference
@@ -93,10 +96,22 @@ public class ManageSession {
         return spSession.getBoolean(ISLOGIN,false);
     }
     // to delete the user and clear the preferences
+
+
     public void logOutUser()
     {
-        editor.clear();
+        editor.remove(PASSWORD);
+        editor.remove(USERTYPE);
+        editor.remove(TOKEN);
+        editor.remove(ISLOGIN);
+        editor.remove(BUILDINGS);
         editor.commit();
+    }
+
+    public String checkSession()
+    {
+
+        return spSession.getString(USERNAME,"");
     }
 
 }

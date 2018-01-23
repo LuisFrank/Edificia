@@ -1,6 +1,7 @@
 package pe.assetec.edificia.fragment;
 
 import android.content.Context;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -37,6 +38,7 @@ import java.util.List;
 import pe.assetec.edificia.LoginActivity;
 import pe.assetec.edificia.R;
 import pe.assetec.edificia.model.Comment;
+import pe.assetec.edificia.util.Constant;
 import pe.assetec.edificia.util.ManageSession;
 
 /**
@@ -49,13 +51,7 @@ import pe.assetec.edificia.util.ManageSession;
  */
 public class TicketFormFragment extends Fragment {
 
-
-    //   RUTAS
-//   String myUrl = "http://edificia.pe/api/v1/buildings";
-    //Localhost
-    String myUrl = "http://localhost:3000/api/v1/buildings";
-    //String to place our result in
-    String result;
+    String myUrl = Constant.SERVER;
     ManageSession session;
 
     Button buttonTicket;
@@ -198,8 +194,8 @@ public class TicketFormFragment extends Fragment {
     }
 
     public class TicketPostTask extends AsyncTask<Void, Void, String> {
-
-
+        String jsonText;
+        String result;
         String mtoken;
         String murl_string;
         String msummary,mdescription;
@@ -291,7 +287,6 @@ public class TicketFormFragment extends Fragment {
                     // Read data sent from server
                     InputStream input = conn.getInputStream();
                     BufferedReader reader = new BufferedReader(new InputStreamReader(input, "UTF-8"));
-                    StringBuilder result = new StringBuilder();
                     String line;
                     StringBuffer sb = new StringBuffer();
                     while ((line = reader.readLine()) != null) {
@@ -299,64 +294,58 @@ public class TicketFormFragment extends Fragment {
                     }
                     input.close();
 
-                    String jsonText = sb.toString();
+                    jsonText = sb.toString();
+                    result = "success";
 
-                    // Pass data to onPostExecute method
-                    return jsonText;
-
-                }else{
-
-                    return "false";
+                }else if (response_code == HttpURLConnection.HTTP_UNAUTHORIZED) {
+                    result= "unauthorized";
                 }
 
             } catch (IOException e) {
                 e.printStackTrace();
-                return "exception";
+                result ="error";
             } finally {
                 conn.disconnect();
             }
-
-
-
-            // TODO: register the new account here.
-
+            return  result;
         }
 
         @Override
-        protected void onPostExecute(String success) {
+        protected void onPostExecute(String result) {
 
             showProgress(false);
-            Log.e("succes",success);
-            JSONObject jsonObject = null;
-            try {
-                jsonObject = new JSONObject(success);
-                if(jsonObject.isNull("success"))
-                {
-                    Toast.makeText(getActivity(),"Hubo un problema al enviar datos",Toast.LENGTH_LONG).show();
-                }
-                else
-                {
-                    if (jsonObject.getBoolean("success")){
-                        Toast.makeText(getActivity(),"Se envió correctamente",Toast.LENGTH_LONG).show();
-                        Fragment mFrag = new TicketsListFragment();
-                        Bundle bundle=new Bundle();
-                        bundle.putInt("building_id",building_id);
-                        bundle.putInt("departament_id",departament_id);
-                        mFrag.setArguments(bundle);
-                        FragmentManager fragmentManager = getActivity().getFragmentManager();
-                        fragmentManager.beginTransaction().replace(R.id.Contendor, mFrag).addToBackStack(null).commit();
-
-//                        FragmentTransaction ftr = getFragmentManager().beginTransaction();
-//                        ftr.detach(frg).attach(frg).commit();
-                    }else{
-                        Toast.makeText(getActivity(),"No se pudo enviar :    \n " +  jsonObject.getString("errors").replace(",","\n"),Toast.LENGTH_LONG).show();
+            if (result.equalsIgnoreCase("success")) {
+                JSONObject jsonObject = null;
+                try {
+                    jsonObject = new JSONObject(jsonText);
+                    if (jsonObject.isNull("success")) {
+                        Toast.makeText(getActivity(), "Hubo un problema al enviar datos", Toast.LENGTH_LONG).show();
+                    } else {
+                        if (jsonObject.getBoolean("success")) {
+                            Toast.makeText(getActivity(), "Se envió correctamente", Toast.LENGTH_LONG).show();
+                            Fragment mFrag = new TicketsListFragment();
+                            Bundle bundle = new Bundle();
+                            bundle.putInt("building_id", building_id);
+                            bundle.putInt("departament_id", departament_id);
+                            mFrag.setArguments(bundle);
+                            FragmentManager fragmentManager = getActivity().getFragmentManager();
+                            fragmentManager.beginTransaction().replace(R.id.Contendor, mFrag).addToBackStack(null).commit();
+                        } else {
+                            Toast.makeText(getActivity(), "No se pudo enviar :    \n " + jsonObject.getString("errors").replace(",", "\n"), Toast.LENGTH_LONG).show();
+                        }
                     }
-
-                    //it's not contain key club or isnull so do this operation here
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                    Toast.makeText(getActivity(), "Ha ocurrido un error en el servidor ", Toast.LENGTH_LONG).show();
                 }
-            } catch (JSONException e) {
-                e.printStackTrace();
-                Toast.makeText(getActivity(),"Ha ocurrido un error en el servidor ",Toast.LENGTH_LONG).show();
+
+            } else if (result.equalsIgnoreCase("unauthorized")) {
+                Toast.makeText(getActivity(), "Su sesisón ha expirado.", Toast.LENGTH_LONG).show();
+                Intent myIntent = new Intent(getActivity(), LoginActivity.class);
+                session.logOutUser();
+                startActivity(myIntent);
+            } else {
+                Toast.makeText(getActivity(), "Ha ocurrido un error", Toast.LENGTH_LONG).show();
             }
         }
 

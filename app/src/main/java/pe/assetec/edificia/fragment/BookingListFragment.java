@@ -2,6 +2,7 @@ package pe.assetec.edificia.fragment;
 
 import android.app.FragmentManager;
 import android.content.Context;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -14,6 +15,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.ProgressBar;
+import android.widget.Toast;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -28,11 +30,13 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
+import pe.assetec.edificia.LoginActivity;
 import pe.assetec.edificia.R;
 import pe.assetec.edificia.controller.BookingsController;
 import pe.assetec.edificia.controller.TicketsController;
 import pe.assetec.edificia.model.Booking;
 import pe.assetec.edificia.model.Ticket;
+import pe.assetec.edificia.util.Constant;
 import pe.assetec.edificia.util.ManageSession;
 
 /**
@@ -45,12 +49,8 @@ import pe.assetec.edificia.util.ManageSession;
  */
 public class BookingListFragment extends Fragment {
 
-    //   RUTAS
-//    String myUrl = "http://edificia.pe/api/v1/buildings";
-    //Localhost
-  String myUrl = "http://localhost:3000/api/v1/buildings";
-    //String to place our result in
-    String result;
+
+    String myUrl = Constant.SERVER;
     ManageSession session;
 
 
@@ -179,7 +179,7 @@ public class BookingListFragment extends Fragment {
     }
 
     public class BookingListTask extends AsyncTask<Void, Void, String> {
-
+        String result;
         String mtoken;
         String murl_string;
         HttpURLConnection conn;
@@ -223,80 +223,73 @@ public class BookingListFragment extends Fragment {
 
                 int response_code = connection.getResponseCode();
                 //Create a new InputStreamReader
-                InputStream input = connection.getInputStream();
-                BufferedReader reader = new BufferedReader(new InputStreamReader(input, "UTF-8"));
-                String line;
-                StringBuffer sb = new StringBuffer();
-                while ((line = reader.readLine()) != null) {
-                    sb.append(line);
+                if (response_code == HttpURLConnection.HTTP_OK) {
+                    InputStream input = connection.getInputStream();
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(input, "UTF-8"));
+                    String line;
+                    StringBuffer sb = new StringBuffer();
+                    while ((line = reader.readLine()) != null) {
+                        sb.append(line);
+                    }
+                    input.close();
+
+                    String get_result = sb.toString();
+                    datos = new ArrayList<Booking>();
+                    datos = BookingsController.fromJson(new JSONObject(get_result).getJSONArray("bookings"));
+                    result= "success";
+                }else if (response_code == HttpURLConnection.HTTP_UNAUTHORIZED) {
+                    result  ="unauthorized";
                 }
-                input.close();
-
-                String get_result = sb.toString();
-                datos = new ArrayList<Booking>();
-                datos = BookingsController.fromJson(new JSONObject(get_result).getJSONArray("bookings"));
-
 
             } catch (MalformedURLException e) {
                 e.printStackTrace();
-                result = null;
+                result = "error";
             } catch (IOException e) {
                 e.printStackTrace();
-                result = null;
+                result = "error";
             } catch (JSONException e) {
                 e.printStackTrace();
+                result = "error";
             }
 
-            return "success";
+            return result;
             // TODO: register the new account here.
 
         }
 
         @Override
-        protected void onPostExecute(String success) {
-            showProgress(false);
-            listAdapter = new BookingListAdapter(getActivity(), R.layout.row_layout_booking, datos);
-            listview.setAdapter(listAdapter);
-            listAdapter.notifyDataSetChanged();
-//            mProgressBar.setVisibility(View.GONE);
+        protected void onPostExecute(String result) {
+                showProgress(false);
+            if (result.equalsIgnoreCase("success")) {
 
-//            listview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-//                @Override
-//                public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
-//
-//                    Booking booking = (Booking) adapterView.getItemAtPosition(position);
-//
-//                    Log.d("val:", building_id.toString());
-//                    Log.d("val:", departament_id.toString());
-//
-//
-//                    //set Fragmentclass Arguments
-//                    android.app.Fragment mFrag = new CommentsListFragment();
-//                    Bundle bundle = new Bundle();
-//                    bundle.putInt("ticket_id", booking.getId());
-//                    bundle.putInt("building_id", building_id);
-//                    bundle.putInt("departament_id", departament_id);
-//                    mFrag.setArguments(bundle);
-//                    FragmentManager fragmentManager = getActivity().getFragmentManager();
-//                    fragmentManager.beginTransaction().replace(R.id.Contendor, mFrag).addToBackStack(null).commit();
-//
-//                }
-//            });
+                listAdapter = new BookingListAdapter(getActivity(), R.layout.row_layout_booking, datos);
+                listview.setAdapter(listAdapter);
+                listAdapter.notifyDataSetChanged();
 
-            fab.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    //set Fragmentclass Arguments
-                    android.app.Fragment mFrag = new BookingCreateFragment();
-                    Bundle bundle = new Bundle();
-                    bundle.putInt("building_id", building_id);
-                    bundle.putInt("departament_id", departament_id);
-                    mFrag.setArguments(bundle);
-                    FragmentManager fragmentManager = getActivity().getFragmentManager();
-                    fragmentManager.beginTransaction().replace(R.id.Contendor, mFrag).addToBackStack(null).commit();
 
-                }
-            });
+                fab.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        //set Fragmentclass Arguments
+                        android.app.Fragment mFrag = new BookingCreateFragment();
+                        Bundle bundle = new Bundle();
+                        bundle.putInt("building_id", building_id);
+                        bundle.putInt("departament_id", departament_id);
+                        mFrag.setArguments(bundle);
+                        FragmentManager fragmentManager = getActivity().getFragmentManager();
+                        fragmentManager.beginTransaction().replace(R.id.Contendor, mFrag).addToBackStack(null).commit();
+
+                    }
+                });
+            } else if (result.equalsIgnoreCase("unauthorized")){
+                Toast.makeText(getActivity(), "Su sesisón ha expirado.", Toast.LENGTH_LONG).show();
+                Intent myIntent = new Intent(getActivity(), LoginActivity.class);
+                session.logOutUser();
+                startActivity(myIntent);
+            } else {
+                Toast.makeText(getActivity(), "Ha ocurrido un error", Toast.LENGTH_LONG).show();
+            }
+
         }
 
         @Override

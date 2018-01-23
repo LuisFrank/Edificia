@@ -6,6 +6,7 @@ import android.app.FragmentManager;
 import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -48,12 +49,14 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
+import pe.assetec.edificia.LoginActivity;
 import pe.assetec.edificia.R;
 import pe.assetec.edificia.controller.CommonAreasController;
 import pe.assetec.edificia.controller.PeriodController;
 import pe.assetec.edificia.model.Block;
 import pe.assetec.edificia.model.CommonArea;
 import pe.assetec.edificia.model.Period;
+import pe.assetec.edificia.util.Constant;
 import pe.assetec.edificia.util.CustomTimePickDialog;
 import pe.assetec.edificia.util.HttpGetRequest;
 import pe.assetec.edificia.util.ManageSession;
@@ -69,9 +72,9 @@ import static android.app.AlertDialog.THEME_HOLO_LIGHT;
  */
 public class BookingCreateFragment extends Fragment {
 
-    String myUrl = "http://localhost:3000/api/v1/buildings";
-//  String myUrl = "http://edificia.pe/api/v1/buildings";
-    String result;
+//    String myUrl = "http://localhost:3000/api/v1/buildings";
+  String myUrl = Constant.SERVER;
+
 
     public static final String REQUEST_METHOD = "GET";
     public static final int CONNECTION_TIMEOUT=10000;
@@ -114,7 +117,7 @@ public class BookingCreateFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setRetainInstance(true);
+
         if (getArguments() != null) {
 
         }
@@ -409,11 +412,9 @@ public class BookingCreateFragment extends Fragment {
 
     public class BookingPostTask extends AsyncTask<Void, Void, String> {
 
-
-
-         String murl_string,stringToken,common_area_id,name,initial_date,initial_time,final_date,final_time,terms_of_service;
-
-
+        String murl_string,stringToken,common_area_id,name,initial_date,initial_time,final_date,final_time,terms_of_service;
+        String result;
+        String result_json;
         URL url = null;
         HttpURLConnection conn;
         BookingPostTask(String url,String token,String common_area_id,String name,String initial_date,String initial_time,String final_date, String final_time, String terms_of_service) {
@@ -487,46 +488,39 @@ public class BookingCreateFragment extends Fragment {
             } catch (IOException e1) {
                 // TODO Auto-generated catch block
                 e1.printStackTrace();
-                return "exception";
+                return "error";
             } catch (JSONException e) {
                 e.printStackTrace();
+                return "error";
             }
 
             try {
 
                 int response_code = conn.getResponseCode();
                 Log.e("response code", response_code + "codigo");
-                // Check if successful connection made
                 if (response_code == HttpURLConnection.HTTP_OK) {
-                    Log.e("coneccion", "entrooo");
-                    // Read data sent from server
                     InputStream input = conn.getInputStream();
                     BufferedReader reader = new BufferedReader(new InputStreamReader(input, "UTF-8"));
-                    StringBuilder result = new StringBuilder();
                     String line;
                     StringBuffer sb = new StringBuffer();
                     while ((line = reader.readLine()) != null) {
                         sb.append(line);
                     }
                     input.close();
-
-                    String jsonText = sb.toString();
-
-                    // Pass data to onPostExecute method
-                    return jsonText;
-
-                }else{
-
-                    return "false";
+                     result_json = sb.toString();
+                    result= "success";
+                    return result_json;
+                }else if (response_code == HttpURLConnection.HTTP_UNAUTHORIZED) {
+                    result= "unauthorized";
                 }
 
             } catch (IOException e) {
                 e.printStackTrace();
-                return "exception";
+                return "error";
             } finally {
                 conn.disconnect();
             }
-
+            return result_json;
 
 
             // TODO: register the new account here.
@@ -534,42 +528,43 @@ public class BookingCreateFragment extends Fragment {
         }
 
         @Override
-        protected void onPostExecute(String success) {
+        protected void onPostExecute(String success_obj) {
             showProgress(false);
-//            mProgressBar.setVisibility(View.GONE);
-            Log.e("succes",success);
-            JSONObject jsonObject = null;
-            try {
-                jsonObject = new JSONObject(success);
-                if(jsonObject.isNull("success"))
-                {
-                    Toast.makeText(getActivity(),"Hubo un problema al enviar datos",Toast.LENGTH_LONG).show();
-                }
-                else
-                {
-                    if (jsonObject.getBoolean("success")){
-                        Toast.makeText(getActivity(),"Se envio correctamente",Toast.LENGTH_LONG).show();
+            if(result.equalsIgnoreCase("success")) {
 
+                JSONObject jsonObject = null;
+                try {
+                    jsonObject = new JSONObject(success_obj);
+                    if (jsonObject.isNull("success")) {
+                        Toast.makeText(getActivity(), "Hubo un problema al enviar datos", Toast.LENGTH_LONG).show();
+                    } else {
+                        if (jsonObject.getBoolean("success")) {
+                            Toast.makeText(getActivity(), "Se envio correctamente", Toast.LENGTH_LONG).show();
+                            Fragment mFrag = new BookingListFragment();
+                            Bundle bundle = new Bundle();
+                            bundle.putInt("building_id", building_id);
+                            bundle.putInt("departament_id", departament_id);
+                            mFrag.setArguments(bundle);
 
-                        Fragment mFrag = new BookingListFragment();
-                        //set Fragmentclass Arguments
-                        Bundle bundle=new Bundle();
-                        bundle.putInt("building_id",building_id);
-                        bundle.putInt("departament_id",departament_id);
-                        mFrag.setArguments(bundle);
-
-                        FragmentManager fragmentManager = getActivity().getFragmentManager();
-                        fragmentManager.beginTransaction().replace(R.id.Contendor, mFrag).addToBackStack(null).commit();
-
-                    }else{
-                        Toast.makeText(getActivity(),"No se pudo enviar " +  jsonObject.getString("errors"),Toast.LENGTH_LONG).show();
+                            FragmentManager fragmentManager = getActivity().getFragmentManager();
+                            fragmentManager.beginTransaction().replace(R.id.Contendor, mFrag).addToBackStack(null).commit();
+                        } else {
+                            Toast.makeText(getActivity(), "No se pudo enviar " + jsonObject.getString("errors"), Toast.LENGTH_LONG).show();
+                        }
                     }
-
-                    //it's not contain key club or isnull so do this operation here
+                } catch (JSONException e) {
+                    e.printStackTrace();
                 }
-            } catch (JSONException e) {
-                e.printStackTrace();
+
+            } else if (result.equalsIgnoreCase("unauthorized")){
+                Toast.makeText(getActivity(), "Su sesisón ha expirado.", Toast.LENGTH_LONG).show();
+                Intent myIntent = new Intent(getActivity(), LoginActivity.class);
+                session.logOutUser();
+                startActivity(myIntent);
+            } else {
+                Toast.makeText(getActivity(), "Ha ocurrido un error", Toast.LENGTH_LONG).show();
             }
+
         }
 
         @Override
@@ -580,7 +575,7 @@ public class BookingCreateFragment extends Fragment {
     }
 
     public class AreaCommonListTask extends AsyncTask<Void, Void, String> {
-
+        String result;
         String mtoken;
         String murl_string;
         HttpURLConnection conn;
@@ -624,52 +619,61 @@ public class BookingCreateFragment extends Fragment {
 
                 int response_code = connection.getResponseCode();
                 //Create a new InputStreamReader
-                InputStream input = connection.getInputStream();
-                BufferedReader reader = new BufferedReader(new InputStreamReader(input, "UTF-8"));
-                String line;
-                StringBuffer sb = new StringBuffer();
-                while ((line = reader.readLine()) != null) {
-                    sb.append(line);
+                if (response_code == HttpURLConnection.HTTP_OK) {
+                    InputStream input = connection.getInputStream();
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(input, "UTF-8"));
+                    String line;
+                    StringBuffer sb = new StringBuffer();
+                    while ((line = reader.readLine()) != null) {
+                        sb.append(line);
+                    }
+                    input.close();
+
+                    String get_result = sb.toString();
+
+                    JSONObject jsonObjectAreas = new JSONObject(get_result);
+                    datosCommonAreas = new ArrayList<CommonArea>();
+                    datosCommonAreas = CommonAreasController.fromJson(jsonObjectAreas.getJSONArray("common_areas"));
+                    result = "success";
+                }else if (response_code == HttpURLConnection.HTTP_UNAUTHORIZED){
+                    result = "unauthorized";
                 }
-                input.close();
-
-                String get_result = sb.toString();
-
-                JSONObject jsonObjectAreas = new JSONObject(get_result);
-                datosCommonAreas = new ArrayList<CommonArea>();
-                datosCommonAreas = CommonAreasController.fromJson(jsonObjectAreas.getJSONArray("common_areas"));
-
             } catch (MalformedURLException e) {
                 e.printStackTrace();
-                result = null;
+                result = "error";
             } catch (IOException e) {
                 e.printStackTrace();
-                result = null;
+                result = "error";
             } catch (JSONException e) {
-                e.printStackTrace();
+                result = "error";
             }
 
-            return "success";
+            return result;
             // TODO: register the new account here.
 
         }
 
         @Override
-        protected void onPostExecute(String success) {
+        protected void onPostExecute(String result) {
             showProgress(false);
-            ArrayAdapter<CommonArea> adapter;
-            adapter = new ArrayAdapter<CommonArea> (getActivity(),android.R.layout.select_dialog_item,datosCommonAreas);
-            spnAreaCommon.setAdapter(adapter);
-            adapter.notifyDataSetChanged();
-
+            if(result.equalsIgnoreCase("success")) {
+                ArrayAdapter<CommonArea> adapter;
+                adapter = new ArrayAdapter<CommonArea>(getActivity(), android.R.layout.select_dialog_item, datosCommonAreas);
+                spnAreaCommon.setAdapter(adapter);
+                adapter.notifyDataSetChanged();
+            }else if (result.equalsIgnoreCase("unauthorized")){
+                    Toast.makeText(getActivity(), "Su sesisón ha expirado.", Toast.LENGTH_LONG).show();
+                    Intent myIntent = new Intent(getActivity(), LoginActivity.class);
+                    session.logOutUser();
+                    startActivity(myIntent);
+            } else {
+                Toast.makeText(getActivity(), "Ha ocurrido un error", Toast.LENGTH_LONG).show();
+            }
         }
 
         @Override
         protected void onCancelled() {
             showProgress(false);
-//            mProgressBar.setVisibility(View.GONE);
-//            mAuthTask = null;
-//            showProgress(false);
         }
 
 
@@ -679,9 +683,7 @@ public class BookingCreateFragment extends Fragment {
     private void showProgress(final boolean show) {
         bookingform.setVisibility(show ? View.GONE: View.VISIBLE);
         pbBooking.setVisibility(show ? View.VISIBLE: View.GONE);
-
     }
-
 
     public boolean ValidateForm(){
 
@@ -734,10 +736,6 @@ public class BookingCreateFragment extends Fragment {
 
         return cancel;
     }
-
-
-
-
 
 
 }

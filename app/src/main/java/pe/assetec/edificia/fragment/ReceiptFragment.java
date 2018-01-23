@@ -24,6 +24,7 @@ import java.util.concurrent.ExecutionException;
 import pe.assetec.edificia.R;
 import pe.assetec.edificia.controller.BuildingController;
 import pe.assetec.edificia.model.Building;
+import pe.assetec.edificia.util.Constant;
 import pe.assetec.edificia.util.HttpGetRequest;
 import pe.assetec.edificia.util.ManageSession;
 
@@ -36,17 +37,14 @@ import pe.assetec.edificia.util.ManageSession;
  * create an instance of this fragment.
  */
 public class ReceiptFragment extends Fragment {
+
+
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
 
-    //Some url endpoint that you may have
-//    String myUrl = "http://localhost:3000/api/v1/buildings";
-    String myUrl = "http://edificia.pe/api/v1/buildings";
-    //String to place our result in
-    String result;
-
+    String myUrl = Constant.SERVER;
     ManageSession session;
 
 

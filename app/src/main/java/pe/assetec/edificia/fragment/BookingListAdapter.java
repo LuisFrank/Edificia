@@ -2,10 +2,13 @@ package pe.assetec.edificia.fragment;
 
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.PorterDuff;
+import android.graphics.drawable.Drawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -56,11 +59,22 @@ public class BookingListAdapter extends ArrayAdapter<Booking> {
 //        TextView time_initial = (TextView) rowView.findViewById(R.id.tvTimeInitialBooking);
         TextView date_final = (TextView) rowView.findViewById(R.id.tvToDateFinalBooking);
 //        TextView time_final = (TextView) rowView.findViewById(R.id.tvToTimeFinalBooking);
+        ImageView iv = (ImageView) rowView.findViewById(R.id.ivBookingStatus);
 
 
+        // [:Pendiente, :Aprobado, :Rechazado]
+        if (item.getStatus_cd() == 0){
+            iv.setImageResource(R.drawable.ic_warning_black);
+            iv.setColorFilter(getContext().getResources().getColor(R.color.colorPending));
 
+        }else if(item.getStatus_cd() == 1){
+            iv.setImageResource(R.drawable.ic_check_black);
+            iv.setColorFilter(getContext().getResources().getColor(R.color.colorAproved));
 
-//        closed_ticket.setText( item.getState());
+        }else if(item.getStatus_cd() == 2){
+            iv.setImageResource(R.drawable.ic_cancel_black);
+            iv.setColorFilter(getContext().getResources().getColor(R.color.colorCancel));
+        }
         commom_area_name.setText(item.getCommon_area_name());
         status.setText(item.getStatus_name());
         name.setText(item.getName());

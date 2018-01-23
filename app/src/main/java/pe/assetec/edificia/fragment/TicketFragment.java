@@ -29,6 +29,7 @@ import pe.assetec.edificia.R;
 import pe.assetec.edificia.controller.BuildingController;
 import pe.assetec.edificia.model.Building;
 import pe.assetec.edificia.model.Departament;
+import pe.assetec.edificia.util.Constant;
 import pe.assetec.edificia.util.HttpGetRequest;
 import pe.assetec.edificia.util.ManageSession;
 
@@ -42,8 +43,8 @@ import pe.assetec.edificia.util.ManageSession;
  */
 public class TicketFragment extends Fragment {
 
-//    String myUrl = "http://localhost:3000/api/v1/buildings";
-    String myUrl = "http://edificia.pe/api/v1/buildings";
+
+    String myUrl = Constant.SERVER;
     String result;
 
     List<Building> departaments;
@@ -89,7 +90,6 @@ public class TicketFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setRetainInstance(true);
         if (getArguments() != null) {
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);

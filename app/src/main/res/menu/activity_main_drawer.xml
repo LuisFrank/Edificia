@@ -4,19 +4,19 @@
     <group android:checkableBehavior="single">
         <item
             android:id="@+id/nav_receipt"
-            android:icon="@drawable/ic_menu_gallery"
+            android:icon="@drawable/ic_invoice_24dp"
             android:title="Recibos" />
         <item
             android:id="@+id/nav_report"
-            android:icon="@drawable/ic_menu_gallery"
+            android:icon="@drawable/ic_document_24dp"
             android:title="Informes Económicos" />
         <item
             android:id="@+id/nav_booking"
-            android:icon="@drawable/ic_menu_gallery"
+            android:icon="@drawable/ic_booking_24dp"
             android:title="Reservas" />
         <item
             android:id="@+id/nav_ticket"
-            android:icon="@drawable/ic_menu_manage"
+            android:icon="@drawable/ic_chat_black_24dp"
             android:title="Tickets" />
     </group>
 

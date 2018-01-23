@@ -3,6 +3,7 @@ package pe.assetec.edificia.fragment;
 import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -29,7 +30,9 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+import pe.assetec.edificia.LoginActivity;
 import pe.assetec.edificia.R;
+import pe.assetec.edificia.util.Constant;
 import pe.assetec.edificia.util.ManageSession;
 
 /**
@@ -42,15 +45,14 @@ import pe.assetec.edificia.util.ManageSession;
  */
 public class ShowPDFFragment extends Fragment {
 
+
+    String myUrl = Constant.SERVER;
     // Storage Permissions variables
     private static final int REQUEST_EXTERNAL_STORAGE = 1;
     private static String[] PERMISSIONS_STORAGE = {
             Manifest.permission.READ_EXTERNAL_STORAGE,
             Manifest.permission.WRITE_EXTERNAL_STORAGE
     };
-
-    String myUrl = "http://localhost:3000/api/v1/buildings";
-//    String myUrl = "http://edificia.pe/api/v1/buildings";
 
     PDFView pdfv;
     ManageSession session;
@@ -163,6 +165,7 @@ public class ShowPDFFragment extends Fragment {
     private class DownloadFile extends AsyncTask<String, String, String> {
         private static final int  MEGABYTE = 1024 * 1024;
         private static final int BUFFER_SIZE = 4096;
+
         String result = "";
         String fileName = "";
         @Override
@@ -182,10 +185,6 @@ public class ShowPDFFragment extends Fragment {
 
                 HttpURLConnection httpConn = null;
                 httpConn = (HttpURLConnection) url.openConnection();
-                //Set methods and timeouts
-//                httpConn.setRequestMethod(REQUEST_METHOD);
-//                httpConn.setReadTimeout(READ_TIMEOUT);
-//                httpConn.setConnectTimeout(CONNECTION_TIMEOUT);
                 String token = " " +new String(stringToken);
                 httpConn.addRequestProperty ("Authorization", token);
                 //Connect to our url
@@ -236,18 +235,21 @@ public class ShowPDFFragment extends Fragment {
 
                         outputStream.close();
                         inputStream.close();
-
+                        result = "success";
                     } catch (FileNotFoundException e) {
                         e.printStackTrace();
+                        result = "error";
                     } catch (MalformedURLException e) {
                         e.printStackTrace();
+                        result = "error";
                     } catch (IOException e) {
                         e.printStackTrace();
+                        result = "error";
                     }
-                    result = "success";
 
-                    } else {
-                                result = "failed";
+
+                    } else if (responseCode == HttpURLConnection.HTTP_UNAUTHORIZED) {
+                    result = "unauthorized";
                     }
 
 
@@ -279,8 +281,13 @@ public class ShowPDFFragment extends Fragment {
                     .spacing(0)
                     .load();
                     pdfv.zoomTo(STARTZOOM);
-                }else{
-                     Toast.makeText(getActivity(), "No se pudo visualizar el PDF", Toast.LENGTH_SHORT).show();
+                } else if (result.equalsIgnoreCase("unauthorized")){
+                    Toast.makeText(getActivity(), "Su sesisón ha expirado.", Toast.LENGTH_LONG).show();
+                    Intent myIntent = new Intent(getActivity(), LoginActivity.class);
+                    session.logOutUser();
+                    startActivity(myIntent);
+                } else {
+                    Toast.makeText(getActivity(), "Ha ocurrido un error.", Toast.LENGTH_LONG).show();
                 }
         }
     }

@@ -39,6 +39,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
+import pe.assetec.edificia.LoginActivity;
 import pe.assetec.edificia.R;
 import pe.assetec.edificia.controller.BuildingController;
 import pe.assetec.edificia.controller.DepartamentsController;
@@ -49,6 +50,7 @@ import pe.assetec.edificia.model.Departament;
 import pe.assetec.edificia.model.Period;
 import pe.assetec.edificia.model.Ticket;
 import pe.assetec.edificia.util.AppStatus;
+import pe.assetec.edificia.util.Constant;
 import pe.assetec.edificia.util.HttpGetRequestContext;
 import pe.assetec.edificia.util.HttpGetRequestContextDepartaments;
 import pe.assetec.edificia.util.ManageSession;
@@ -67,18 +69,19 @@ public class ReportFragment extends Fragment {
     public static final int CONNECTION_TIMEOUT=10000;
     public static final int READ_TIMEOUT=15000;
 
+    String myUrl = Constant.SERVER;
+
     Spinner spnBuildings, spnPeriods, spnTypeinfo;
     FloatingActionButton faba;
     Button  buttonDownload;
     ProgressBar pbReport, pbPeriod;
     View reportForm, periodForm;
     //Some url endpoint that you may have
-    String myUrl = "http://localhost:3000/api/v1/buildings";
     String UrlDetallado = "economic_reports";
     String UrlResumido = "economic_report_groupeds";
 //    String myUrl = "http://edificia.pe/api/v1/buildings";
     //String to place our result in
-    String result;
+
 
     ManageSession session;
     DownloadManager downloadManager;
@@ -341,7 +344,7 @@ public class ReportFragment extends Fragment {
 
 
     public class PeriodListTask extends AsyncTask<Void, Void, String> {
-
+        String result;
         String mtoken;
         String murl_string;
         HttpURLConnection conn;
@@ -385,50 +388,65 @@ public class ReportFragment extends Fragment {
 
                 int response_code = connection.getResponseCode();
                 //Create a new InputStreamReader
-                InputStream input = connection.getInputStream();
-                BufferedReader reader = new BufferedReader(new InputStreamReader(input, "UTF-8"));
-                String line;
-                StringBuffer sb = new StringBuffer();
-                while ((line = reader.readLine()) != null) {
-                    sb.append(line);
+                if (response_code == HttpURLConnection.HTTP_OK) {
+                    InputStream input = connection.getInputStream();
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(input, "UTF-8"));
+                    String line;
+                    StringBuffer sb = new StringBuffer();
+                    while ((line = reader.readLine()) != null) {
+                        sb.append(line);
+                    }
+                    input.close();
+
+                    String get_result = sb.toString();
+
+                    JSONObject jsonObjectPeriod = new JSONObject(get_result);
+                    periods = new ArrayList<Period>();
+                    periods = PeriodController.fromJson(jsonObjectPeriod.getJSONArray("periods"));
+                    result = "success";
+                }else if (response_code == HttpURLConnection.HTTP_UNAUTHORIZED){
+                    result = "unauthorized";
                 }
-                input.close();
-
-                String get_result = sb.toString();
-
-                JSONObject jsonObjectPeriod = new JSONObject(get_result);
-                periods = new ArrayList<Period>();
-                periods = PeriodController.fromJson(jsonObjectPeriod.getJSONArray("periods"));
-
             } catch (MalformedURLException e) {
                 e.printStackTrace();
-                result = null;
+                result = "error";
             } catch (IOException e) {
                 e.printStackTrace();
-                result = null;
+                result = "error";
             } catch (JSONException e) {
+                result = "error";
                 e.printStackTrace();
             }
 
-            return "success";
+            return result;
             // TODO: register the new account here.
 
         }
 
         @Override
-        protected void onPostExecute(String success) {
+        protected void onPostExecute(String result) {
             showProgressPeriod(false);
-            ArrayAdapter<Period> dataAdapterPeriods = new ArrayAdapter<Period>(getActivity(),
-                    android.R.layout.select_dialog_item, periods);
-            dataAdapterPeriods.setDropDownViewResource(android.R.layout.select_dialog_item);
-            spnPeriods.setAdapter(dataAdapterPeriods);
-            dataAdapterPeriods.notifyDataSetChanged();
 
-            if (periods.size() == 0){
-                Toast.makeText(getActivity(), "No existen Periodos", Toast.LENGTH_LONG).show();
-                showPeriod(false);
-            }else{
-                showPeriod(true);
+            if (result.equalsIgnoreCase("success")) {
+                ArrayAdapter<Period> dataAdapterPeriods = new ArrayAdapter<Period>(getActivity(),
+                        android.R.layout.select_dialog_item, periods);
+                dataAdapterPeriods.setDropDownViewResource(android.R.layout.select_dialog_item);
+                spnPeriods.setAdapter(dataAdapterPeriods);
+                dataAdapterPeriods.notifyDataSetChanged();
+
+                if (periods.size() == 0) {
+                    Toast.makeText(getActivity(), "No existen Periodos", Toast.LENGTH_LONG).show();
+                    showPeriod(false);
+                } else {
+                    showPeriod(true);
+                }
+            } else if (result.equalsIgnoreCase("unauthorized")){
+                Toast.makeText(getActivity(), "Su sesisón ha expirado.", Toast.LENGTH_LONG).show();
+                Intent myIntent = new Intent(getActivity(), LoginActivity.class);
+                session.logOutUser();
+                startActivity(myIntent);
+            } else {
+                Toast.makeText(getActivity(), "Ha ocurrido un error", Toast.LENGTH_LONG).show();
             }
         }
 

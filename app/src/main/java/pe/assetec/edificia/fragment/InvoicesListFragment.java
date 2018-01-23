@@ -3,6 +3,7 @@ package pe.assetec.edificia.fragment;
 import android.app.DownloadManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -31,12 +32,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
+import pe.assetec.edificia.LoginActivity;
 import pe.assetec.edificia.R;
 import pe.assetec.edificia.controller.InvoicesController;
 import pe.assetec.edificia.controller.TicketsController;
 import pe.assetec.edificia.model.Building;
 import pe.assetec.edificia.model.Invoice;
 import pe.assetec.edificia.model.Ticket;
+import pe.assetec.edificia.util.Constant;
 import pe.assetec.edificia.util.HttpGetRequest;
 import pe.assetec.edificia.util.ManageSession;
 
@@ -50,17 +53,14 @@ import pe.assetec.edificia.util.ManageSession;
  */
 public class InvoicesListFragment extends Fragment {
 
+
+
     public static final String REQUEST_METHOD = "GET";
     public static final int CONNECTION_TIMEOUT=10000;
     public static final int READ_TIMEOUT=15000;
 
+    String myUrl = Constant.SERVER;
 
-    DownloadManager downloadManager;
-//   RUTAS
-//    String myUrl = "http://edificia.pe/api/v1/buildings";
-    //Localhost
-    String myUrl = "http://localhost:3000/api/v1/buildings";
-    //String to place our result in
     String result;
     ProgressBar pbInvoice;
     View invoiceList;
@@ -210,20 +210,25 @@ public class InvoicesListFragment extends Fragment {
                 connection.connect();
 
                 int response_code = connection.getResponseCode();
-                //Create a new InputStreamReader
-                InputStream input = connection.getInputStream();
-                BufferedReader reader = new BufferedReader(new InputStreamReader(input, "UTF-8"));
-                String line;
-                StringBuffer sb = new StringBuffer();
-                while ((line = reader.readLine()) != null) {
-                    sb.append(line);
+                if (response_code == HttpURLConnection.HTTP_OK) {
+
+                    //Create a new InputStreamReader
+                    InputStream input = connection.getInputStream();
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(input, "UTF-8"));
+                    String line;
+                    StringBuffer sb = new StringBuffer();
+                    while ((line = reader.readLine()) != null) {
+                        sb.append(line);
+                    }
+                    input.close();
+
+                    String get_result = sb.toString();
+                    datos = new ArrayList<Invoice>();
+                    datos = InvoicesController.fromJson(new JSONObject(get_result).getJSONArray("invoices"));
+                    return "success";
+                }else if (response_code == HttpURLConnection.HTTP_UNAUTHORIZED){
+                    return "unauthorized";
                 }
-                input.close();
-
-                String get_result = sb.toString();
-                datos = new ArrayList<Invoice>();
-                datos = InvoicesController.fromJson(new JSONObject(get_result).getJSONArray("invoices"));
-
             } catch (MalformedURLException e) {
                 e.printStackTrace();
                 result = null;
@@ -234,7 +239,7 @@ public class InvoicesListFragment extends Fragment {
                 e.printStackTrace();
             }
 
-            return "success";
+            return "error";
             // TODO: register the new account here.
 
         }
@@ -242,42 +247,40 @@ public class InvoicesListFragment extends Fragment {
         @Override
         protected void onPostExecute(String success) {
             showProgress(false);
-            listAdapter = new InvoicesListAdapter(getActivity(),R.layout.row_layout_invoices,datos);
-            listview.setAdapter(listAdapter);
-            listAdapter.notifyDataSetChanged();
+            if(success.equalsIgnoreCase("success")) {
+
+                listAdapter = new InvoicesListAdapter(getActivity(), R.layout.row_layout_invoices, datos);
+                listview.setAdapter(listAdapter);
+                listAdapter.notifyDataSetChanged();
 
 
-            listview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                @Override
-                public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
+                listview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                    @Override
+                    public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
 
-                    Invoice invoice = (Invoice)adapterView.getItemAtPosition(position);
-
-//                    Fragment fr  = new ShowPDFFragment();
-//                    Bundle bundle=new Bundle();
-//                    bundle.putInt("building_id",building_id);
-//                    bundle.putInt("departament_id",departament_id);
-//                    bundle.putInt("invoice_id",invoice.getId());
-//                    fr.setArguments(bundle);
-//                    FragmentManager fragmentManager = getActivity().getFragmentManager();
-//                    fragmentManager.beginTransaction().replace(R.id.Contendor, fr).addToBackStack(null).commit();
-
-
-//                    String FinalUrl =  myUrl + "/"+building_id + "/departaments/"+ departament_id + "/invoices/" + invoice_id +"/print.pdf";
-
-                    //set Fragmentclass Arguments
-                    Fragment fr  = new ShowPDFFragment();
-                    Bundle bundle=new Bundle();
-                    bundle.putInt("building_id",building_id);
-                    bundle.putInt("departament_id",departament_id);
-                    bundle.putInt("invoice_id",invoice.getId());
-                    fr.setArguments(bundle);
-                    FragmentManager fragmentManager = getActivity().getFragmentManager();
-                    fragmentManager.beginTransaction().replace(R.id.Contendor, fr).addToBackStack(null).commit();
+                        Invoice invoice = (Invoice) adapterView.getItemAtPosition(position);
+                        Fragment fr = new ShowPDFFragment();
+                        Bundle bundle = new Bundle();
+                        bundle.putInt("building_id", building_id);
+                        bundle.putInt("departament_id", departament_id);
+                        bundle.putInt("invoice_id", invoice.getId());
+                        fr.setArguments(bundle);
+                        FragmentManager fragmentManager = getActivity().getFragmentManager();
+                        fragmentManager.beginTransaction().replace(R.id.Contendor, fr).addToBackStack(null).commit();
 
 
-                }
-            });
+                    }
+                });
+            }
+            else if (success.equalsIgnoreCase("unauthorized")){
+                Toast.makeText(getActivity(), "Su sesisón ha expirado.", Toast.LENGTH_LONG).show();
+                Intent myIntent = new Intent(getActivity(), LoginActivity.class);
+                session.logOutUser();
+//               myIntent.putExtra("key", value); //Optional parameters
+                startActivity(myIntent);
+            } else {
+                Toast.makeText(getActivity(), "Ha ocurrido un error", Toast.LENGTH_LONG).show();
+            }
         }
         @Override
         protected void onCancelled() {

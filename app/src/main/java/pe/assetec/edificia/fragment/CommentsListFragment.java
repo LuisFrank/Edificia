@@ -48,6 +48,7 @@ import pe.assetec.edificia.model.Comment;
 import pe.assetec.edificia.model.Departament;
 import pe.assetec.edificia.model.Period;
 import pe.assetec.edificia.model.Ticket;
+import pe.assetec.edificia.util.Constant;
 import pe.assetec.edificia.util.HttpGetRequest;
 import pe.assetec.edificia.util.ManageSession;
 
@@ -60,12 +61,9 @@ import pe.assetec.edificia.util.ManageSession;
  * create an instance of this fragment.
  */
 public class CommentsListFragment extends Fragment {
-    //   RUTAS
-//   String myUrl = "http://edificia.pe/api/v1/buildings";
-    //Localhost
-  String myUrl = "http://localhost:3000/api/v1/buildings";
-    //String to place our result in
-    String result;
+
+
+    String myUrl = Constant.SERVER;
     ManageSession session;
 
     List<Comment> comments;
@@ -82,7 +80,7 @@ public class CommentsListFragment extends Fragment {
     public static final int CONNECTION_TIMEOUT=10000;
     public static final int READ_TIMEOUT=15000;
     private static final int REQUEST_READ_CONTACTS = 0;
-     Ticket Ticketobject;
+    Ticket Ticketobject;
 
     Integer ticket_id = 0;
     Integer building_id  = 0;
@@ -218,7 +216,7 @@ public class CommentsListFragment extends Fragment {
     }
 
     public class CommentsTask extends AsyncTask<Void, Void, String>  {
-
+        String result;
         String mtoken;
         String murl_string;
         HttpURLConnection conn;
@@ -268,61 +266,69 @@ public class CommentsListFragment extends Fragment {
 
                 int response_code = connection.getResponseCode();
                 //Create a new InputStreamReader
-                InputStream input = connection.getInputStream();
-                BufferedReader reader = new BufferedReader(new InputStreamReader(input, "UTF-8"));
-                String line;
-                StringBuffer sb = new StringBuffer();
-                while ((line = reader.readLine()) != null) {
-                    sb.append(line);
+                if (response_code == HttpURLConnection.HTTP_OK) {
+                    InputStream input = connection.getInputStream();
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(input, "UTF-8"));
+                    String line;
+                    StringBuffer sb = new StringBuffer();
+                    while ((line = reader.readLine()) != null) {
+                        sb.append(line);
+                    }
+                    input.close();
+
+                    String get_result = sb.toString();
+
+                    comments.addAll(CommentsController.fromJson(new JSONObject(get_result).getJSONObject("ticket").getJSONArray("comments")));
+                    result = "success";
+
+                } else if (response_code == HttpURLConnection.HTTP_UNAUTHORIZED) {
+                    result = "unauthorized";
                 }
-                input.close();
-
-                String get_result =  sb.toString();
-
-                comments.addAll(CommentsController.fromJson(new JSONObject(get_result).getJSONObject("ticket").getJSONArray("comments")));
-                result = sb.toString();
-                Log.e("resultado response ",result);
-
-
             } catch (MalformedURLException e) {
                 e.printStackTrace();
-                result = null;
+                result = "error";
             } catch (IOException e) {
                 e.printStackTrace();
-                result = null;
+                result = "error";
             } catch (JSONException e) {
                 e.printStackTrace();
+                result = "error";
             }
-            return  "success";
+            return  result;
 
         }
 
         @Override
-        protected void onPostExecute(String success) {
+        protected void onPostExecute(String result) {
             showProgress(false);
             showProgressComment(false);
-            listAdapter = new CommentsListAdapter(getActivity(),R.layout.row_layout_comment,comments);
-            listview.setAdapter(listAdapter);
-            listAdapter.notifyDataSetChanged();
-
+            if(result.equalsIgnoreCase("success")){
+                listAdapter = new CommentsListAdapter(getActivity(),R.layout.row_layout_comment,comments);
+                listview.setAdapter(listAdapter);
+                listAdapter.notifyDataSetChanged();
+            } else if (result.equalsIgnoreCase("unauthorized")){
+                Toast.makeText(getActivity(), "Su sesisón ha expirado.", Toast.LENGTH_LONG).show();
+                Intent myIntent = new Intent(getActivity(), LoginActivity.class);
+                session.logOutUser();
+                startActivity(myIntent);
+            } else {
+                Toast.makeText(getActivity(), "Ha ocurrido un error", Toast.LENGTH_LONG).show();
+            }
         }
 
         @Override
         protected void onCancelled() {
             showProgress(false);
-//            mAuthTask = null;
-//            showProgress(false);
         }
     }
 
-
-
     public class CommentPostTask extends AsyncTask<Void, Void, String> {
 
-
+        String result;
         String mtoken;
         String murl_string;
         String comment;
+        String jsonText;
 
 
 
@@ -399,7 +405,6 @@ public class CommentsListFragment extends Fragment {
                     // Read data sent from server
                     InputStream input = conn.getInputStream();
                     BufferedReader reader = new BufferedReader(new InputStreamReader(input, "UTF-8"));
-                    StringBuilder result = new StringBuilder();
                     String line;
                     StringBuffer sb = new StringBuffer();
                     while ((line = reader.readLine()) != null) {
@@ -407,14 +412,11 @@ public class CommentsListFragment extends Fragment {
                     }
                     input.close();
 
-                    String jsonText = sb.toString();
+                    jsonText = sb.toString();
 
-                    // Pass data to onPostExecute method
-                    return jsonText;
-
-                }else{
-
-                    return "false";
+                    result = "success";
+                }else if(response_code == HttpURLConnection.HTTP_UNAUTHORIZED) {
+                    result ="unauthorized";
                 }
 
             } catch (IOException e) {
@@ -423,46 +425,44 @@ public class CommentsListFragment extends Fragment {
             } finally {
                 conn.disconnect();
             }
-
-
-
-            // TODO: register the new account here.
-
+            return result;
         }
 
         @Override
-        protected void onPostExecute(String success) {
+        protected void onPostExecute(String result) {
 
             showProgressComment(true);
-            Log.e("succes",success);
-            JSONObject jsonObject = null;
-            try {
-                jsonObject = new JSONObject(success);
-                if(jsonObject.isNull("success"))
-                {
-                   Toast.makeText(getActivity(),"Hubo un problema al enviar datos",Toast.LENGTH_LONG).show();
-                }
-                else
-                {
-                    if (jsonObject.getBoolean("success")){
-                    Toast.makeText(getActivity(),"Se envio correctamente",Toast.LENGTH_LONG).show();
-                        Fragment frg = new CommentsListFragment();
+            if (result.equalsIgnoreCase("success")) {
+                    JSONObject jsonObject = null;
+                    try {
+                        jsonObject = new JSONObject(jsonText);
+                        if(jsonObject.isNull("success"))
+                        {
+                           Toast.makeText(getActivity(),"Hubo un problema al enviar datos",Toast.LENGTH_LONG).show();
+                        }
+                        else
+                        {
+                            if (jsonObject.getBoolean("success")){
+                                 Toast.makeText(getActivity(),"Se envio correctamente",Toast.LENGTH_LONG).show();
+                                String finalUrl =myUrl+ "/"+building_id+"/departaments/"+ departament_id+"/tickets/"+ticket_id;
+                                CommentsTask tas = new CommentsTask(mtoken,finalUrl);
+                                tas.execute();
+                                etComment.setText("");
 
-//                        FragmentTransaction ftr = getFragmentManager().beginTransaction();
-//                        ftr.detach(frg).attach(frg).commit();
-                        String finalUrl =myUrl+ "/"+building_id+"/departaments/"+ departament_id+"/tickets/"+ticket_id;
-                        CommentsTask tas = new CommentsTask(mtoken,finalUrl);
-                        tas.execute();
-                        etComment.setText("");
-
-                    }else{
-                        Toast.makeText(getActivity(),"No se pudo enviar ",Toast.LENGTH_LONG).show();
+                            }else{
+                                Toast.makeText(getActivity(),"No se pudo enviar ",Toast.LENGTH_LONG).show();
+                            }
+                        }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
                     }
-
-                    //it's not contain key club or isnull so do this operation here
-                }
-            } catch (JSONException e) {
-                e.printStackTrace();
+            } else if (result.equalsIgnoreCase("unauthorized")){
+                Toast.makeText(getActivity(), "Su sesisón ha expirado.", Toast.LENGTH_LONG).show();
+                Intent myIntent = new Intent(getActivity(), LoginActivity.class);
+                session.logOutUser();
+                startActivity(myIntent);
+            } else {
+                Toast.makeText(getActivity(), "Ha ocurrido un error", Toast.LENGTH_LONG).show();
             }
         }
 

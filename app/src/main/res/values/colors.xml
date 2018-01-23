@@ -8,4 +8,9 @@
     <color name="colorLoginButton">#939b92</color>
 
     <color name="colorItemList">#e9e9e9</color>
+
+
+    <color name="colorPending">#d2b409</color>
+    <color name="colorAproved">#30bc47</color>
+    <color name="colorCancel">#ec2222</color>
 </resources>

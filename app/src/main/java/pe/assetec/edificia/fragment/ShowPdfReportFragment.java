@@ -3,6 +3,7 @@ package pe.assetec.edificia.fragment;
 import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -30,7 +31,9 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+import pe.assetec.edificia.LoginActivity;
 import pe.assetec.edificia.R;
+import pe.assetec.edificia.util.Constant;
 import pe.assetec.edificia.util.ManageSession;
 
 /**
@@ -43,17 +46,13 @@ import pe.assetec.edificia.util.ManageSession;
  */
 public class ShowPdfReportFragment extends Fragment {
 
+    String myUrl = Constant.SERVER;
     // Storage Permissions variables
     private static final int REQUEST_EXTERNAL_STORAGE = 1;
     private static String[] PERMISSIONS_STORAGE = {
             Manifest.permission.READ_EXTERNAL_STORAGE,
             Manifest.permission.WRITE_EXTERNAL_STORAGE
     };
-
-    String UrlDetallado = "economic_reports";
-    String UrlResumido = "economic_report_groupeds";
-    String myUrl = "http://localhost:3000/api/v1/buildings";
-//    String myUrl = "http://edificia.pe/api/v1/buildings";
 
     ProgressBar pbReport;
     View reportPdf;
@@ -88,7 +87,6 @@ public class ShowPdfReportFragment extends Fragment {
 
         pdfv = (PDFView) v.findViewById(R.id.pdfViewReport);
         pbReport = (ProgressBar) v.findViewById(R.id.progressBarReport);
-        reportPdf =  v.findViewById(R.id.report_pdf);
         String url_report =   getArguments().getString("url_report");
 
         final String token = session.getTOKEN();
@@ -210,23 +208,28 @@ public class ShowPdfReportFragment extends Fragment {
 
                     } catch (FileNotFoundException e) {
                         e.printStackTrace();
+                        result = "error";
                     } catch (MalformedURLException e) {
                         e.printStackTrace();
+                        result = "error";
                     } catch (IOException e) {
                         e.printStackTrace();
+                        result = "error";
                     }
 
                     result = "success";
-                } else {
-
-                    result = "failed";
+                } else if (responseCode == HttpURLConnection.HTTP_UNAUTHORIZED){
+                    result = "unauthorized";
                 }
 
 
             } catch (MalformedURLException e) {
                 e.printStackTrace();
+                result = "error";
+
             } catch (IOException e) {
                 e.printStackTrace();
+                result = "error";
             }
 
             return result;
@@ -235,25 +238,29 @@ public class ShowPdfReportFragment extends Fragment {
         @Override
         protected void onPostExecute(String result) {
             showProgress(false);
-            if (result.equalsIgnoreCase("success")){
+                if (result.equalsIgnoreCase("success")){
 
+                    Toast.makeText(getActivity(), fileName, Toast.LENGTH_SHORT).show();
+                     File file = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator + fileName);
+                    pdfv.fromFile(file).enableSwipe(true) // allows to block changing pages using swipe
+                            .swipeHorizontal(false)
+                            .enableDoubletap(true)
+                            .enableAnnotationRendering(false) // render annotations (such as comments, colors or forms)
+                            .password(null)
+                            .scrollHandle(null)
+                            .enableAntialiasing(true) // improve rendering a little bit on low-res screens
+                            // spacing between pages in dp. To define spacing color, set view background
+                            .spacing(0)
+                            .load();
 
-                Toast.makeText(getActivity(), fileName, Toast.LENGTH_SHORT).show();
-              File file = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator + fileName);
-                pdfv.fromFile(file).enableSwipe(true) // allows to block changing pages using swipe
-                        .swipeHorizontal(false)
-                        .enableDoubletap(true)
-                        .enableAnnotationRendering(false) // render annotations (such as comments, colors or forms)
-                        .password(null)
-                        .scrollHandle(null)
-                        .enableAntialiasing(true) // improve rendering a little bit on low-res screens
-                        // spacing between pages in dp. To define spacing color, set view background
-                        .spacing(0)
-                        .load();
-            }else{
-                Toast.makeText(getActivity(), "No se puedo visualizar el PDF", Toast.LENGTH_SHORT).show();
-
-            }
+                } else if (result.equalsIgnoreCase("unauthorized")){
+                    Toast.makeText(getActivity(), "Su sesisón ha expirado.", Toast.LENGTH_LONG).show();
+                    Intent myIntent = new Intent(getActivity(), LoginActivity.class);
+                    session.logOutUser();
+                    startActivity(myIntent);
+                } else {
+                    Toast.makeText(getActivity(), "Ha ocurrido un error.", Toast.LENGTH_LONG).show();
+                }
         }
     }
 
@@ -281,7 +288,7 @@ public class ShowPdfReportFragment extends Fragment {
     }
 
     private void showProgress(final boolean show) {
-        reportPdf.setVisibility(show ? View.GONE: View.VISIBLE);
+        pdfv.setVisibility(show ? View.GONE: View.VISIBLE);
         pbReport.setVisibility(show ? View.VISIBLE: View.GONE);
 
     }

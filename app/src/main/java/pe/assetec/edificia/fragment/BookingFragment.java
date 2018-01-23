@@ -24,6 +24,7 @@ import java.util.Locale;
 import pe.assetec.edificia.R;
 import pe.assetec.edificia.controller.BuildingController;
 import pe.assetec.edificia.model.Building;
+import pe.assetec.edificia.util.Constant;
 import pe.assetec.edificia.util.ManageSession;
 
 /**
@@ -36,8 +37,7 @@ import pe.assetec.edificia.util.ManageSession;
  */
 public class BookingFragment extends Fragment {
 
-  String myUrl = "http://localhost:3000/api/v1/buildings";
-//String myUrl = "http://edificia.pe/api/v1/buildings";
+    String myUrl = Constant.SERVER;
     String result;
 
     List<Building> departaments;

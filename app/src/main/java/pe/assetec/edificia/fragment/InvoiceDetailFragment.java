@@ -34,16 +34,14 @@ import pe.assetec.edificia.controller.InvoiceDetailController;
 
 import pe.assetec.edificia.model.Invoice;
 import pe.assetec.edificia.model.InvoiceDetail;
+import pe.assetec.edificia.util.Constant;
 import pe.assetec.edificia.util.ManageSession;
 
 
 public class InvoiceDetailFragment extends Fragment {
+
+    String myUrl = Constant.SERVER;
     DownloadManager downloadManager;
-    //   RUTAS
-    //http://edificia.pe/api/v1/buildings/1/departaments/1/invoices/1/print.pdf
-      String myUrl = "http://edificia.pe/api/v1/buildings";
-    //Localhost
-//    String myUrl = "http://localhost:3000/api/v1/buildings";
     ManageSession session;
 
     private TextView mInvoiceDateIssued;

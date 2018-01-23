@@ -1,6 +1,7 @@
 package pe.assetec.edificia.fragment;
 
 import android.content.Context;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -32,12 +33,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
+import pe.assetec.edificia.LoginActivity;
 import pe.assetec.edificia.R;
 import pe.assetec.edificia.controller.CommentsController;
 import pe.assetec.edificia.controller.InvoicesController;
 import pe.assetec.edificia.controller.TicketsController;
 import pe.assetec.edificia.model.Invoice;
 import pe.assetec.edificia.model.Ticket;
+import pe.assetec.edificia.util.Constant;
 import pe.assetec.edificia.util.HttpGetRequest;
 import pe.assetec.edificia.util.ManageSession;
 
@@ -51,12 +54,8 @@ import pe.assetec.edificia.util.ManageSession;
  */
 public class TicketsListFragment extends Fragment {
 
-    //   RUTAS
-//    String myUrl = "http://edificia.pe/api/v1/buildings";
-    //Localhost
-    String myUrl = "http://localhost:3000/api/v1/buildings";
-    //String to place our result in
-    String result;
+
+    String myUrl = Constant.SERVER;
     ManageSession session;
 
 
@@ -175,7 +174,7 @@ public class TicketsListFragment extends Fragment {
 
 
     public class TicketListTask extends AsyncTask<Void, Void, String> {
-
+        String result;
         String mtoken;
         String murl_string;
         HttpURLConnection conn;
@@ -219,83 +218,97 @@ public class TicketsListFragment extends Fragment {
 
                 int response_code = connection.getResponseCode();
                 //Create a new InputStreamReader
-                InputStream input = connection.getInputStream();
-                BufferedReader reader = new BufferedReader(new InputStreamReader(input, "UTF-8"));
-                String line;
-                StringBuffer sb = new StringBuffer();
-                while ((line = reader.readLine()) != null) {
-                    sb.append(line);
+                if (response_code == HttpURLConnection.HTTP_OK) {
+                    InputStream input = connection.getInputStream();
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(input, "UTF-8"));
+                    String line;
+                    StringBuffer sb = new StringBuffer();
+                    while ((line = reader.readLine()) != null) {
+                        sb.append(line);
+                    }
+                    input.close();
+
+                    String get_result = sb.toString();
+                    datos = new ArrayList<Ticket>();
+                    datos = TicketsController.fromJson(new JSONObject(get_result).getJSONArray("tickets"));
+                    result = "success";
+                }else if (response_code == HttpURLConnection.HTTP_UNAUTHORIZED) {
+                    result = "unauthorized";
                 }
-                input.close();
-
-                String get_result = sb.toString();
-                datos = new ArrayList<Ticket>();
-                datos = TicketsController.fromJson(new JSONObject(get_result).getJSONArray("tickets"));
-
 
             } catch (MalformedURLException e) {
                 e.printStackTrace();
-                result = null;
+                result = "error";
             } catch (IOException e) {
                 e.printStackTrace();
-                result = null;
+                result = "error";
             } catch (JSONException e) {
                 e.printStackTrace();
+                result = "error";
             }
 
-            return "success";
+            return result;
             // TODO: register the new account here.
 
         }
 
         @Override
-        protected void onPostExecute(String success) {
+        protected void onPostExecute(String result) {
             showProgress(false);
-            listAdapter = new TicketsListAdapter(getActivity(),R.layout.row_layout_ticket,datos);
-            listview.setAdapter(listAdapter);
-            listAdapter.notifyDataSetChanged();
-//            mProgressBar.setVisibility(View.GONE);
 
-            listview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                @Override
-                public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
+            if (result.equalsIgnoreCase("success")){
+                listAdapter = new TicketsListAdapter(getActivity(), R.layout.row_layout_ticket, datos);
+                listview.setAdapter(listAdapter);
+                listAdapter.notifyDataSetChanged();
+                //            mProgressBar.setVisibility(View.GONE);
 
-                    Ticket ticket = (Ticket)adapterView.getItemAtPosition(position);
+                listview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                    @Override
+                    public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
 
-                    Log.d("val:",building_id.toString());
-                    Log.d("val:",departament_id.toString());
+                        Ticket ticket = (Ticket) adapterView.getItemAtPosition(position);
+
+                        Log.d("val:", building_id.toString());
+                        Log.d("val:", departament_id.toString());
 
 
+                        //set Fragmentclass Arguments
+                        Fragment mFrag = new CommentsListFragment();
+                        Bundle bundle = new Bundle();
+                        bundle.putInt("ticket_id", ticket.getId());
+                        bundle.putInt("building_id", building_id);
+                        bundle.putInt("departament_id", departament_id);
+                        bundle.putSerializable("ticket", ticket);
+                        mFrag.setArguments(bundle);
+                        FragmentManager fragmentManager = getActivity().getFragmentManager();
+                        fragmentManager.beginTransaction().replace(R.id.Contendor, mFrag).addToBackStack(null).commit();
 
+                    }
+                });
 
-                    //set Fragmentclass Arguments
-                    Fragment mFrag = new CommentsListFragment();
-                    Bundle bundle=new Bundle();
-                    bundle.putInt("ticket_id",ticket.getId());
-                    bundle.putInt("building_id",building_id);
-                    bundle.putInt("departament_id",departament_id);
-                    bundle.putSerializable("ticket",ticket);
-                    mFrag.setArguments(bundle);
-                    FragmentManager fragmentManager = getActivity().getFragmentManager();
-                    fragmentManager.beginTransaction().replace(R.id.Contendor, mFrag).addToBackStack(null).commit();
+                fab.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        //set Fragmentclass Arguments
+                        Fragment mFrag = new TicketFormFragment();
+                        Bundle bundle = new Bundle();
+                        bundle.putInt("building_id", building_id);
+                        bundle.putInt("departament_id", departament_id);
+                        mFrag.setArguments(bundle);
+                        FragmentManager fragmentManager = getActivity().getFragmentManager();
+                        fragmentManager.beginTransaction().replace(R.id.Contendor, mFrag).addToBackStack(null).commit();
 
-                }
-            });
+                    }
+                });
+            } else if (result.equalsIgnoreCase("unauthorized")){
+                Toast.makeText(getActivity(), "Su sesisón ha expirado.", Toast.LENGTH_LONG).show();
+                Intent myIntent = new Intent(getActivity(), LoginActivity.class);
+                session.logOutUser();
+                startActivity(myIntent);
+            } else {
+                Toast.makeText(getActivity(), "Ha ocurrido un error", Toast.LENGTH_LONG).show();
+            }
 
-            fab.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    //set Fragmentclass Arguments
-                    Fragment mFrag = new TicketFormFragment();
-                    Bundle bundle=new Bundle();
-                    bundle.putInt("building_id",building_id);
-                    bundle.putInt("departament_id",departament_id);
-                    mFrag.setArguments(bundle);
-                    FragmentManager fragmentManager = getActivity().getFragmentManager();
-                    fragmentManager.beginTransaction().replace(R.id.Contendor, mFrag).addToBackStack(null).commit();
-
-                }
-            });
         }
 
         @Override

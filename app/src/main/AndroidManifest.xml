@@ -19,6 +19,7 @@
         android:roundIcon="@drawable/icon_edificia"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+
         <activity
             android:name=".LoginActivity"
             android:label="@string/title_activity_login">
@@ -30,6 +31,7 @@
         <activity
             android:name=".MainActivity"
             android:label="@string/title_activity_main"
+            android:configChanges="orientation|screenSize|keyboard"
             android:theme="@style/AppTheme.NoActionBar" />
 
     </application>
