@@ -7,6 +7,7 @@ import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -101,7 +102,7 @@ public class BookingCreateFragment extends Fragment {
     EditText etFinalDate;
     EditText etFinalTime;
 
-    TextInputLayout tilTitle,tilTerms,tilInitialDate,tilInitialTime,tilFinalDate, tilFinalTime;
+    TextInputLayout tilSpinner,tilTitle,tilTerms,tilInitialDate,tilInitialTime,tilFinalDate, tilFinalTime;
     DatePickerDialog datePickerDialog;
     DatePickerDialog datePickerDialogF;
     CustomTimePickDialog customTimePickerDialog, customTimePickerDialogF;
@@ -139,6 +140,7 @@ public class BookingCreateFragment extends Fragment {
         pbBooking = (ProgressBar) view.findViewById(R.id.progressBarBooking);
         bookingform = view.findViewById(R.id.booking_form);
         spnAreaCommon  = (Spinner) view.findViewById(R.id.spnBookingAreaCommon);
+
         etTitle  = (EditText) view.findViewById(R.id.etBookingName);
         etInitialDate  = (EditText) view.findViewById(R.id.etBookingInitialDate);
         etInitialTime  = (EditText) view.findViewById(R.id.etBookingInitialTime);
@@ -149,7 +151,7 @@ public class BookingCreateFragment extends Fragment {
         tvDetalles =  (TextView) view.findViewById(R.id.tvDetalles);
         btnCreate = (Button) view.findViewById(R.id.btnBooking);
 
-
+        tilSpinner =  (TextInputLayout) view.findViewById(R.id.tilspn);
         tilTitle =  (TextInputLayout) view.findViewById(R.id.tilBookingName);
         tilTerms =  (TextInputLayout) view.findViewById(R.id.tilBookingTerms);
         tilInitialDate =  (TextInputLayout) view.findViewById(R.id.tilBookingInitialDate);
@@ -252,7 +254,7 @@ public class BookingCreateFragment extends Fragment {
                 int hour = mcurrentTime.get(Calendar.HOUR_OF_DAY);
                 int minute = mcurrentTime.get(Calendar.MINUTE);
 
-                customTimePickerDialog = new CustomTimePickDialog(getActivity(), R.style.TimePicker, new CustomTimePickDialog.OnTimeSetListener() {
+                customTimePickerDialog = new CustomTimePickDialog(getActivity(), TimePickerDialog.THEME_HOLO_LIGHT, new CustomTimePickDialog.OnTimeSetListener() {
                     @Override
                     public void onTimeSet(TimePicker timePicker, int selectedHour, int selectedMinute) {
                         etInitialTime.setText( selectedHour + ":" + String.format("%02d",selectedMinute));
@@ -315,18 +317,22 @@ public class BookingCreateFragment extends Fragment {
                 AlertDialog.Builder builder1 = new AlertDialog.Builder(getActivity());
                 builder1.setTitle("Reglamento");
                 CommonArea area_common = (CommonArea) spnAreaCommon.getSelectedItem();
-                builder1.setMessage(area_common.getRegulation());
-                builder1.setCancelable(true);
-                builder1.setNegativeButton(
-                        "Cerrar",
-                        new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int id) {
-                                dialog.cancel();
-                            }
-                        });
+                if (area_common != null) {
+                    builder1.setMessage(area_common.getRegulation());
+                    builder1.setCancelable(true);
+                    builder1.setNegativeButton(
+                            "Cerrar",
+                            new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int id) {
+                                    dialog.cancel();
+                                }
+                            });
 
-                AlertDialog alert11 = builder1.create();
-                alert11.show();
+                    AlertDialog alert11 = builder1.create();
+                    alert11.show();
+                }else{
+                    Toast.makeText(getActivity(), "No existe área comúm.Por favor,  consulte al administrador", Toast.LENGTH_LONG).show();
+                }
             }
         });
 
@@ -337,37 +343,37 @@ public class BookingCreateFragment extends Fragment {
                 AlertDialog.Builder builderDetail = new AlertDialog.Builder(
                         new ContextThemeWrapper(getActivity(), android.R.style.Theme_Holo_Light));
 
-
                 CommonArea area_common = (CommonArea) spnAreaCommon.getSelectedItem();
-
-                builderDetail.setTitle(area_common.getName());
-//                builder1.setMessage(area_common.getDescription());
-
-                StringBuilder horarios = new StringBuilder();
-                horarios.append("Descripción:");
-                horarios.append("\n");
-                horarios.append(area_common.getDescription());
-                horarios.append("\n");
-                horarios.append("\n");
-                horarios.append("Horarios de Reserva:");
-                horarios.append("\n");
-                for(Block block : area_common.getBloks()) {
-                    horarios.append("*");
-                    horarios.append(block.Horarios());
+                if (area_common != null){
+                    builderDetail.setTitle(area_common.getName());
+                    StringBuilder horarios = new StringBuilder();
+                    horarios.append("Descripción:");
                     horarios.append("\n");
+                    horarios.append(area_common.getDescription());
+                    horarios.append("\n");
+                    horarios.append("\n");
+                    horarios.append("Horarios de Reserva:");
+                    horarios.append("\n");
+                    for(Block block : area_common.getBloks()) {
+                        horarios.append("*");
+                        horarios.append(block.Horarios());
+                        horarios.append("\n");
+                    }
+                    builderDetail.setMessage(horarios.toString());
+                    builderDetail.setCancelable(true);
+                    builderDetail.setNegativeButton(
+                            "Cerrar",
+                            new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int id) {
+                                    dialog.cancel();
+                                }
+                            });
+                    AlertDialog alert22 = builderDetail.create();
+                    alert22.show();
+                }else{
+                    Toast.makeText(getActivity(), "No existe área común.Por favor,  consulte al administrador", Toast.LENGTH_LONG).show();
                 }
-                builderDetail.setMessage(horarios.toString());
-                builderDetail.setCancelable(true);
-                builderDetail.setNegativeButton(
-                        "Cerrar",
-                        new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int id) {
-                                dialog.cancel();
-                            }
-                        });
 
-                AlertDialog alert22 = builderDetail.create();
-                alert22.show();
             }
         });
     }
@@ -394,6 +400,7 @@ public class BookingCreateFragment extends Fragment {
                     String initial_time = etInitialTime.getText().toString();
                     String final_date = etFinalDate.getText().toString();
                     String final_time = etFinalTime.getText().toString();
+                    Boolean automatic_approvement = area_common.getAutomatic_approvement();
                     String terms_of_service = "";
                     if (chxTerms.isChecked()) {
                         terms_of_service = "1";
@@ -401,7 +408,7 @@ public class BookingCreateFragment extends Fragment {
                         terms_of_service = "0";
                     }
 
-                    BookingPostTask bookinsTaks = new BookingPostTask(finalUrl, session.getTOKEN(), common_area_id, name, initial_date, initial_time, final_date, final_time, terms_of_service);
+                    BookingPostTask bookinsTaks = new BookingPostTask(finalUrl, session.getTOKEN(), common_area_id, name, initial_date, initial_time, final_date, final_time, terms_of_service,automatic_approvement );
                     bookinsTaks.execute();
                 }
             }
@@ -413,11 +420,12 @@ public class BookingCreateFragment extends Fragment {
     public class BookingPostTask extends AsyncTask<Void, Void, String> {
 
         String murl_string,stringToken,common_area_id,name,initial_date,initial_time,final_date,final_time,terms_of_service;
+        Boolean automatic_aprovement;
         String result;
         String result_json;
         URL url = null;
         HttpURLConnection conn;
-        BookingPostTask(String url,String token,String common_area_id,String name,String initial_date,String initial_time,String final_date, String final_time, String terms_of_service) {
+        BookingPostTask(String url,String token,String common_area_id,String name,String initial_date,String initial_time,String final_date, String final_time, String terms_of_service, Boolean automatic_aprovement) {
             this.stringToken = token;
             this.murl_string = url;
             this.common_area_id = common_area_id;
@@ -427,8 +435,7 @@ public class BookingCreateFragment extends Fragment {
             this.final_date = final_date;
             this.final_time = final_time;
             this.terms_of_service = terms_of_service;
-
-
+            this.automatic_aprovement = automatic_aprovement;
         }
 
         @Override
@@ -477,6 +484,11 @@ public class BookingCreateFragment extends Fragment {
                 jsonobj.put("final_date", final_date);
                 jsonobj.put("final_time", final_time);
                 jsonobj.put("terms_of_service", terms_of_service);
+                if (automatic_aprovement){
+                    jsonobj.put("status_cd", 1);
+                }else{
+                    jsonobj.put("status_cd", 0);
+                }
 
                 BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(conn.getOutputStream(), "UTF-8"));
                 bw.write(jsonobj.toString());
@@ -689,6 +701,12 @@ public class BookingCreateFragment extends Fragment {
 
         boolean cancel = false;
 
+
+        if (spnAreaCommon.getSelectedItem() == null) {
+            tilSpinner.setError(getString(R.string.error_field_required));
+            cancel = true;
+        }
+
         if (TextUtils.isEmpty(etTitle.getText())  ) {
 
             tilTitle.setError(getString(R.string.error_field_required));
@@ -736,6 +754,7 @@ public class BookingCreateFragment extends Fragment {
 
         return cancel;
     }
+
 
 
 }

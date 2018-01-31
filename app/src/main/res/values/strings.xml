@@ -38,7 +38,7 @@
     <!-- Booking -->
     <string name="booking_common_area_name">Área</string>
     <string name="booking_from">Inicio: </string>
-    <string name="booking_to">Final: </string>
+    <string name="booking_to">Final:  </string>
 
 
     <string-array name="TipoInformePerson">

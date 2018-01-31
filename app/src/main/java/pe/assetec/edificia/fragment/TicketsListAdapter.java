@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -51,8 +52,10 @@ public class TicketsListAdapter extends ArrayAdapter<Ticket> {
 //        TextView closed_ticket = (TextView) rowView.findViewById(R.id.tvClosedTicketRL);
         TextView name_ticket = (TextView) rowView.findViewById(R.id.tvNameTicketRL);
         TextView created_at = (TextView) rowView.findViewById(R.id.tvDateTicketRL);
+        ImageView image_ticket = (ImageView) rowView.findViewById(R.id.ivImageTicketRL);
 
-
+        image_ticket.setImageResource(R.drawable.ic_chat_black_24dp);
+        image_ticket.setColorFilter(getContext().getResources().getColor(R.color.colorAproved));
 
 //        closed_ticket.setText( item.getState());
         name_ticket.setText(item.getSummary());

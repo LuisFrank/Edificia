@@ -176,7 +176,11 @@ public class Booking {
             booking.setCommon_area_id(jsonObject.getInt("common_area_id"));
             booking.setName(jsonObject.getString("name"));
             booking.setDescription(jsonObject.getString("description"));
-            booking.setStatus_cd(jsonObject.getInt("status_cd"));
+            if (!jsonObject.isNull("status_cd")){
+                booking.setStatus_cd(jsonObject.getInt("status_cd"));
+            }else{
+                booking.setStatus_cd(3);
+            }
             booking.setObservations(jsonObject.getString("observations"));
             booking.setDate( jsonObject.getString("date"));
             booking.setStart_time( jsonObject.getString("initial_format"));

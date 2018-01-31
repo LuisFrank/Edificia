@@ -234,6 +234,7 @@ public class BookingListFragment extends Fragment {
                     input.close();
 
                     String get_result = sb.toString();
+                    Log.e("bookins",get_result);
                     datos = new ArrayList<Booking>();
                     datos = BookingsController.fromJson(new JSONObject(get_result).getJSONArray("bookings"));
                     result= "success";

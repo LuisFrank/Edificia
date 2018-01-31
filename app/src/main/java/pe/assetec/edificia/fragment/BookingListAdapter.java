@@ -74,13 +74,16 @@ public class BookingListAdapter extends ArrayAdapter<Booking> {
         }else if(item.getStatus_cd() == 2){
             iv.setImageResource(R.drawable.ic_cancel_black);
             iv.setColorFilter(getContext().getResources().getColor(R.color.colorCancel));
+        }else{
+            iv.setImageResource(R.drawable.ic_warning_black);
+            iv.setColorFilter(getContext().getResources().getColor(R.color.colorPending));
         }
         commom_area_name.setText(item.getCommon_area_name());
         status.setText(item.getStatus_name());
         name.setText(item.getName());
         date_initial.setText(item.getStart_time());
 //        time_initial.setText(item.getSummary());
-        date_final.setText(item.getEnd_time());
+        date_final.setText(" " + item.getEnd_time());
 //        time_final.setText(item.getSummary());
 
 

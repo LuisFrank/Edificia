@@ -1,36 +1,66 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/colorItemList">
 
+
+
     <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="25dp"
-        android:orientation="horizontal">
+        android:paddingLeft="16dp"
+        android:paddingRight="16dp"
+        android:minHeight="72dp"
+        android:orientation="horizontal"
+        android:weightSum="1">
 
-        <TextView
-            android:id="@+id/tvNameTicketRL"
+        <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:gravity="start"
-            android:text="UPC"
-            android:textAppearance="@style/TextAppearance.AppCompat.Title"
-            android:textStyle="bold" />
+            android:layout_weight="0.3"
+            android:orientation="vertical">
 
-        <TextView
-            android:id="@+id/tvDateTicketRL"
+            <TextView
+                android:id="@+id/tvNameTicketRL"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="start"
+                android:paddingTop="20dp"
+                android:text="UPC"
+                android:textSize="16sp"
+                android:textAppearance="@style/TextAppearance.AppCompat.Title" />
+
+            <TextView
+                android:id="@+id/tvDateTicketRL"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="start"
+                android:text="15/45/17"
+                android:textSize="14sp"
+                android:paddingBottom="20dp"
+                android:textAppearance="@style/TextAppearance.AppCompat.Medium" />
+
+        </LinearLayout>
+
+        <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="2"
-            android:gravity="start"
-            android:text="15/45/17"
-            android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-            android:textStyle="bold" />
+            android:layout_weight="0.7"
+            android:orientation="vertical">
+
+            <ImageView
+                android:id="@+id/ivImageTicketRL"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:maxHeight="56dp"
+                android:paddingTop="16dp"
+                android:paddingLeft="16dp"
+                android:paddingRight="16dp"
+                android:paddingBottom="16dp"
+                android:layout_gravity="center"/>
+        </LinearLayout>
 
     </LinearLayout>
-
-
 </LinearLayout>
