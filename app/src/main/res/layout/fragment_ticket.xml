@@ -14,7 +14,8 @@
         android:id="@+id/txtSearchTicket"
         android:layout_width="match_parent"
         android:layout_height="81dp"
-        android:hint="Buscar Departamento" />
+        android:paddingLeft="16dp"
+        android:hint="Buscar departamento" />
 
     <ListView
         android:id="@+id/lvDepartamentsTicket"

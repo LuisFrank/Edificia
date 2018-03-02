@@ -1,11 +1,18 @@
 package pe.assetec.edificia;
 
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.content.Intent;
+import android.graphics.Color;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.app.Fragment;
+import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -18,6 +25,14 @@ import android.view.MenuItem;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+
+import me.leolin.shortcutbadger.ShortcutBadger;
 import pe.assetec.edificia.fragment.BookingCreateFragment;
 import pe.assetec.edificia.fragment.BookingFragment;
 import pe.assetec.edificia.fragment.BookingListFragment;
@@ -32,6 +47,8 @@ import pe.assetec.edificia.fragment.ShowPdfReportFragment;
 import pe.assetec.edificia.fragment.TicketFormFragment;
 import pe.assetec.edificia.fragment.TicketFragment;
 import pe.assetec.edificia.fragment.TicketsListFragment;
+import pe.assetec.edificia.model.User;
+import pe.assetec.edificia.util.Constant;
 import pe.assetec.edificia.util.ManageSession;
 
 public class MainActivity extends AppCompatActivity
@@ -41,18 +58,20 @@ public class MainActivity extends AppCompatActivity
         TicketFormFragment.OnFragmentInteractionListener, ShowPDFFragment.OnFragmentInteractionListener, ShowPdfReportFragment.OnFragmentInteractionListener, DefaultFragment.OnFragmentInteractionListener, BookingListFragment.OnFragmentInteractionListener, BookingCreateFragment.OnFragmentInteractionListener {
     ManageSession session;
 
+    DatabaseReference databaseRoot,databaseCompany,databaseBuilding,databaseUsers;
+
 
     private ImageView imageViewUser;
     private TextView textViewUser;
+    NavigationView navigationView;
+    DrawerLayout drawer;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
         //Session
         session=new ManageSession(MainActivity.this);
-
-
+        databaseRoot = FirebaseDatabase.getInstance().getReference();
 
         Fragment fragment = null;
         fragment=  new DefaultFragment();
@@ -73,18 +92,39 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+         drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.setDrawerListener(toggle);
         toggle.syncState();
 
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+         navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
         View hView =  navigationView.getHeaderView(0);
         textViewUser = (TextView)hView.findViewById(R.id.textViewUserName);
         textViewUser.setText(session.getUserName());
+        getExtras();
+    }
+
+    private void getExtras(){
+        Bundle extras = getIntent().getExtras();
+        if (extras != null) {
+            String collapse = extras.getString("collapse");
+            if (collapse.equalsIgnoreCase("Invoice"))
+            {
+                drawer.openDrawer((Gravity.LEFT));
+                navigationView.getMenu().getItem(0).setChecked(true);
+                if (session.getCountBadge()>0) {
+                    ShortcutBadger.applyCount(getApplicationContext(), session.getCountBadge() - 1);
+                }
+            }
+            else
+            {
+
+            }
+            // and get whatever type user account id is
+        }
     }
 
 
@@ -155,7 +195,9 @@ public class MainActivity extends AppCompatActivity
 
         if (logOut){
             session.logOutUser();
+
             Intent intent = new Intent(MainActivity.this,LoginActivity.class);
+            deleteFireBase();
             startActivity(intent);
             finish();
         }
@@ -173,6 +215,18 @@ public class MainActivity extends AppCompatActivity
     public void onFragmentInteraction(Uri uri) {
 
     }
+
+
+    public void deleteFireBase(){
+        String company = session.getCompanyName();
+        databaseCompany = databaseRoot.child(company);
+        databaseUsers = databaseCompany.child("users");
+        User user = new User();
+        user.setUserId(session.getUserId());
+        databaseUsers.child('/' +user.getUserId().toString()).setValue(null);
+    }
+
+
 
 
 }

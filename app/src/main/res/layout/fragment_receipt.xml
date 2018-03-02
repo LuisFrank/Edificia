@@ -13,24 +13,21 @@
 
     <!-- TODO: Update blank fragment layout -->
     <!--  First header line -->
-        <TextView
-            android:id="@+id/header_line1"
+
+        <EditText
+            android:id="@+id/txtSearchReceipt"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center_vertical|center"
-            android:padding="10dp"
-            android:paddingLeft="18dp"
-            android:text="Departamento"
-            android:textColor="#8e8888"
-            android:textSize="24sp" />
+            android:layout_height="81dp"
+            android:paddingLeft="16dp"
+            android:hint="Buscar epartamento" />
     <!-- Third header line and column headings -->
 
 
-    <ListView
-        android:id="@+id/lvFragmentReceipt"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_weight="2"/>
+        <ListView
+            android:id="@+id/lvFragmentReceipt"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="2"/>
     </LinearLayout>
 
 </FrameLayout>

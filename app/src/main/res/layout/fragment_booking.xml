@@ -13,7 +13,8 @@
             android:id="@+id/txtSearchBooking"
             android:layout_width="match_parent"
             android:layout_height="81dp"
-            android:hint="Buscar Departamento" />
+            android:paddingLeft="16dp"
+            android:hint="Buscar epartamento" />
 
         <ListView
             android:id="@+id/lvDepartamentsBooking"

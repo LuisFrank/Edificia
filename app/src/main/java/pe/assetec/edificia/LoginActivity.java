@@ -33,6 +33,10 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -48,6 +52,9 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
+import pe.assetec.edificia.controller.BuildingController;
+import pe.assetec.edificia.model.Building;
+import pe.assetec.edificia.model.User;
 import pe.assetec.edificia.util.Constant;
 import pe.assetec.edificia.util.ManageSession;
 
@@ -90,13 +97,14 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
     private EditText mPasswordView;
     private View mProgressView;
     private View mLoginFormView;
+    DatabaseReference databaseRoot,databaseCompany,databaseBuilding,databaseUsers;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
         session=new ManageSession(LoginActivity.this);
-
+        databaseRoot = FirebaseDatabase.getInstance().getReference();
         if(session.isUserLogedIn()) {
             Intent intent = new Intent(LoginActivity.this,MainActivity.class);
             startActivity(intent);
@@ -387,6 +395,7 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
                 JSONObject jsonobj = new JSONObject();
                 jsonobj.put("email", mEmail);
                 jsonobj.put("password", mPassword);
+                jsonobj.put("tokenFirebase",session.getFIREBASETOKEN());
 
 
                 out.writeBytes(jsonobj.toString());
@@ -417,7 +426,6 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
                     // Read data sent from server
                     InputStream input = conn.getInputStream();
                     BufferedReader reader = new BufferedReader(new InputStreamReader(input, "UTF-8"));
-                    StringBuilder result = new StringBuilder();
                     String line;
                     StringBuffer sb = new StringBuffer();
                     while ((line = reader.readLine()) != null) {
@@ -430,9 +438,12 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
                     // Pass data to onPostExecute method
                     return jsonText;
 
+                }else if (response_code == HttpURLConnection.HTTP_UNAUTHORIZED){
+                    return "unauthorized";
+                } else if( response_code == HttpURLConnection.HTTP_FORBIDDEN){
+                    return "forbidden";
                 }else{
-
-                    return "unsuccessful";
+                    return "error";
                 }
 
             } catch (IOException e) {
@@ -452,27 +463,41 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
         protected void onPostExecute(String success) {
             mAuthTask = null;
             showProgress(false);
-            Log.e("succes",success);
+
             JSONObject jsonObject = null;
             try {
-                if (!success.equalsIgnoreCase("unsuccessful")){
-
+                if (!success.equalsIgnoreCase("error") && !success.equalsIgnoreCase("exception") && !success.equalsIgnoreCase("unauthorized") && !success.equalsIgnoreCase("forbidden")){
                     jsonObject = new JSONObject(success);
-                    if (jsonObject.isNull("auth_token")) {
-                        mPasswordView.setError(getString(R.string.error_incorrect_password));
-                        mPasswordView.requestFocus();
-                    } else {
+                    if (jsonObject.getString("success").equalsIgnoreCase("true")){
+                            if (jsonObject.isNull("auth_token")) {
+                                mPasswordView.setError(getString(R.string.error_incorrect_password));
+                                mPasswordView.requestFocus();
+                            } else {
+                                Toast.makeText(LoginActivity.this, jsonObject.getJSONObject("user").getString("email").toString(), Toast.LENGTH_SHORT).show();
+                                session.loginUser(jsonObject.getJSONObject("user").getInt("id"),jsonObject.getJSONObject("user").getString("email").toString(), mPassword, jsonObject.getString("auth_token"), true, jsonObject.getJSONObject("user").getJSONArray("buildings"),jsonObject.getJSONObject("user").getString("company_name"),jsonObject.getJSONObject("user").getJSONArray("building_ids"),jsonObject.getJSONObject("user").getJSONArray("building_departament_ids"));
 
-                        Toast.makeText(LoginActivity.this, jsonObject.getJSONObject("user").getString("email").toString(), Toast.LENGTH_SHORT).show();
-                        session.loginUser(jsonObject.getJSONObject("user").getString("email").toString(), mPassword, jsonObject.getString("auth_token"), true, jsonObject.getJSONObject("user").getJSONArray("buildings"));
-                        session.storeUser(jsonObject.getJSONObject("user").getString("full_name"), mPassword, jsonObject.getJSONObject("user").getString("email"), jsonObject.getJSONObject("user").getString("userable_type"));
-                        Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-                        startActivity(intent);
-                        finish();
-                        //it's not contain key club or isnull so do this operation here
+                                session.storeUser(jsonObject.getJSONObject("user").getString("full_name"), mPassword, jsonObject.getJSONObject("user").getString("email"), jsonObject.getJSONObject("user").getString("userable_type"));
+                                saveFireBase(session.getUserEmail(), session.getTOKEN(), session.getUserType(), session.isUserLogedIn(), session.getFIREBASETOKEN());
+
+                                Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                                startActivity(intent);
+                                finish();
+                            }
+                    }else{
+                        Toast.makeText(LoginActivity.this, "Usted aún no tiene ningun departamento asignado", Toast.LENGTH_SHORT).show();
                     }
                 }  else{
-                    Toast.makeText(LoginActivity.this, "Usuario o Contraseña incorrecto", Toast.LENGTH_SHORT).show();
+                    if (success.equalsIgnoreCase("unauthorized"))
+                    {
+                        Toast.makeText(LoginActivity.this, "Usuario o Contraseña incorrecto", Toast.LENGTH_SHORT).show();
+                    }
+                    else if (success.equalsIgnoreCase("forbidden"))
+                    {
+                        Toast.makeText(LoginActivity.this, "Su cuenta ha sido desabilitada.", Toast.LENGTH_SHORT).show();
+                    }
+                    else{
+                        Toast.makeText(LoginActivity.this, "Usuario o Contraseña incorrecto", Toast.LENGTH_SHORT).show();
+                    }
                 }
             } catch (JSONException e) {
                 e.printStackTrace();
@@ -485,5 +510,28 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
             showProgress(false);
         }
     }
+
+    public void saveFireBase(String email,String token,String usertype,Boolean statusSession,String firebasetoken ){
+        String company = session.getCompanyName();
+        databaseCompany = databaseRoot.child(company);
+        databaseUsers = databaseCompany.child("users");
+        User user = new User();
+        user.setUserId(session.getUserId());
+        user.setEmail(email);
+        user.setToken(token);
+        user.setUserType(usertype);
+        user.setTokenFirebase(firebasetoken);
+        user.setStatus_loguin(statusSession);
+        try {
+            user.setBuilding_ids(user.converBuildingIds(new JSONArray(session.getBuildingIds())));
+            user.setBuilding_departament_ids((user.converBuildingDepartamentIds(new JSONArray(session.getBuildingDepartamentIds()))));
+//            user.setBuilding_departament_ids(new JSONArray(session.getBuildingDepartamentIds()));
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        databaseUsers.child('/' +user.getUserId().toString()).setValue(user);
+
+    }
+
 }
 

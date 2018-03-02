@@ -5,11 +5,14 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.app.Fragment;
 import android.app.FragmentManager;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -19,6 +22,7 @@ import org.json.JSONException;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.ExecutionException;
 
 import pe.assetec.edificia.R;
@@ -46,7 +50,12 @@ public class ReceiptFragment extends Fragment {
 
     String myUrl = Constant.SERVER;
     ManageSession session;
+    ListView listview;
+    EditText etSearchReceipt;
 
+    List<Building> departaments;
+    private CustomSearchBuildingAdapter adapter;
+    ArrayList<Building> mAllData=new ArrayList<Building>();
 
     // TODO: Rename and change types of parameters
     private String mParam1;
@@ -90,21 +99,13 @@ public class ReceiptFragment extends Fragment {
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_receipt, container, false);
         session = new ManageSession(getActivity());
-        //Declare variables
-        List<Building> datos =  new ArrayList<Building>();
-        FragmentReceiptListAdapter listAdapter;
 
-        //set contenct
-        session.getBuildings();
+        listview = (ListView) view.findViewById(R.id.lvFragmentReceipt);
+        etSearchReceipt = (EditText)  view.findViewById(R.id.txtSearchReceipt);
 
-        try {
-            datos = BuildingController.fromJson(new JSONArray(session.getBuildings()));
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        ListView listview = (ListView) view.findViewById(R.id.lvFragmentReceipt);
-        listAdapter = new FragmentReceiptListAdapter(getActivity(),R.layout.row_layout_receipt,datos);
-        listview.setAdapter(listAdapter);
+        mAllData.clear();
+        listview.setTextFilterEnabled(true);
+        InitLisDepartaments();
 
         listview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -122,7 +123,26 @@ public class ReceiptFragment extends Fragment {
                     fragmentManager.beginTransaction().replace(R.id.Contendor, mFrag).addToBackStack(null).commit();
             }
         });
-        // Inflate the layout for this fragment
+
+
+        etSearchReceipt.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+                String text = etSearchReceipt.getText().toString().toLowerCase(Locale.getDefault());
+                filter(text);
+            }
+        });
+
         return view;
     }
 
@@ -153,5 +173,36 @@ public class ReceiptFragment extends Fragment {
     public interface OnFragmentInteractionListener {
         // TODO: Update argument type and name
         void onFragmentInteraction(Uri uri);
+    }
+
+    public void filter(String charText) {
+        charText = charText.toLowerCase(Locale.getDefault());
+        departaments .clear();
+        if (charText.length() == 0) {
+            departaments.addAll(mAllData);
+        } else {
+            for (Building wp : mAllData) {
+                if (wp.getDepartament_name().toLowerCase(Locale.getDefault())
+                        .contains(charText) || wp.getBuilding_name().toLowerCase(Locale.getDefault())
+                        .contains(charText)) {
+                    departaments.add(wp);
+                }
+            }
+        }
+        adapter.notifyDataSetChanged();
+    }
+
+    public void InitLisDepartaments(){
+
+        departaments = new ArrayList<Building>();
+        try {
+            departaments = BuildingController.fromJson(new JSONArray(session.getBuildings()));
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        mAllData.addAll(departaments);
+        adapter = new CustomSearchBuildingAdapter(getActivity(),R.layout.row_layout_item_search,departaments);
+        listview.setAdapter(adapter);
+
     }
 }
